@@ -433,8 +433,8 @@ const AiSearch = ()=> {
                                         type="text"
                                         onChange={handleSkillChange}
                                         value={formData.skills.join(", ")}
-                                        placeholder="(Ex- nodejs, javascript, React, Frontend Developer)"
-                                        className="block w-full min-w-85 rounded-md  px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                                        placeholder="(Ex- nodejs, React, Frontend Dev)"
+                                        className="block w-full min-w-60 rounded-md  px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                                     />
                                 </div>
                                 <div className="mt-4 flex md:mt-0 md:ml-4">
