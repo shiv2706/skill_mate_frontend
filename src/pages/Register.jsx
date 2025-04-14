@@ -3,6 +3,7 @@ import {Link, Navigate, useNavigate} from "react-router-dom";
 import {useState} from "react";
 import axios from "axios";
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
+import Loading from "../components/Loading.jsx";
 
 const Register = () => {
 
@@ -13,6 +14,7 @@ const Register = () => {
         email: "",
         password: "",
     });
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,11 +24,14 @@ const Register = () => {
         e.preventDefault(); // Prevent page reload
 
         try {
+            setLoading(true);
             const {data} = await axios.post("/users/register", formData, {withCredentials: true});
             console.log(data)
             localStorage.setItem("user", JSON.stringify({...data.user, password:''}));
+            setLoading(false);
             navigate("/people")
         } catch (error) {
+            setLoading(false);
             console.error("Error submitting form:", error);
             alert("Failed to submit form.");
         }
@@ -109,13 +114,16 @@ const Register = () => {
                                 </div>
 
 
-                                <div>
+                                <div className="flex">
                                     <button
                                         type="submit"
                                         className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                     >
                                         Register
                                     </button>
+                                    {loading && <div>
+                                        <Loading/>
+                                    </div>}
                                 </div>
                                 <span className="isolate inline-flex rounded-md shadow-xs">
                                     <button type="button" onClick={Backhandler}

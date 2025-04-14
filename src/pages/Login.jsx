@@ -3,6 +3,7 @@ import {Link, Navigate, useNavigate} from "react-router-dom";
 import {useState} from "react";
 import axios from "axios";
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
+import Loading from "../components/Loading.jsx";
 
 const Login = () => {
     const navigate = useNavigate()
@@ -11,6 +12,7 @@ const Login = () => {
         email: "",
         password: "",
     });
+    const [loading, setLoading] = useState(false);
 
     // Handle input change
     const handleChange = (e) => {
@@ -25,13 +27,16 @@ const Login = () => {
         e.preventDefault(); // Prevent page reload
 
         try {
+            setLoading(true);
             const {data} = await axios.post("/users/login", formData, {withCredentials: true});
             console.log(data)
             localStorage.setItem("user", JSON.stringify({...data.user, password:''}));
             const user = JSON.parse(localStorage.getItem("user"));
             console.log(user.password)
+            setLoading(false);
             navigate("/people")
         } catch (error) {
+            setLoading(false);
             console.error("Error submitting form:", error);
             alert("Invalid Credentials");
         }
@@ -94,13 +99,16 @@ const Login = () => {
                                         />
                                     </div>
                                 </div>
-                                <div>
+                                <div className="flex">
                                     <button
                                         type="submit"
                                         className="flex w-full justify-center rounded-md mb-10 bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                     >
                                         Sign in
                                     </button>
+                                    {loading && <div>
+                                        <Loading/>
+                                    </div>}
                                 </div>
                                 <span className="isolate inline-flex rounded-md shadow-xs">
                                     <button type="button" onClick={Backhandler} className="relative cursor-pointer inline-flex items-center rounded-l-md bg-white px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10">
