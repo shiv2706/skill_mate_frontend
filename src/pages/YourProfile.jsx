@@ -111,18 +111,18 @@ const YourProfile = ()=> {
 
     const fetchProfile = async () => {
         try{
-            const user = JSON.parse(localStorage.getItem("user"));
-            const data = await axios.post("/profile/get-profile", {ProfileId:user._id}, { withCredentials: true })
-            console.log(data.data.data)
-            if (data.status === 201) {
-                localStorage.setItem("profile", JSON.stringify(data.data));
-            }
+            // const user = JSON.parse(localStorage.getItem("user"));
+            // const data = await axios.post("/profile/get-profile", {ProfileId:user._id}, { withCredentials: true })
+            // console.log(data.data.data)
+            // if (data.status === 201) {
+            //     localStorage.setItem("profile", JSON.stringify(data.data));
+            // }
             const check = JSON.parse(localStorage.getItem("profile"));
-            setProfileData(check.data);
-            setFormData(check.data);
             if(check){
                 setProfile(true)
             }
+            setProfileData(check.data);
+            setFormData(check.data);
         }catch(error){
             console.log(error)
             setProfile(false)
@@ -177,6 +177,13 @@ const YourProfile = ()=> {
                 const user = JSON.parse(localStorage.getItem("user"));
                 const updatedFormData = { ...formData, profileId: user._id};
                 const response = await axios.post("/profile/create-profile", updatedFormData, { withCredentials: true })
+                const user1 = JSON.parse(localStorage.getItem("user"));
+                const data = await axios.post("/profile/get-profile", {ProfileId:user1._id}, {withCredentials:true})
+                console.log(data.data.data)
+                if (data.status === 201) {
+                    localStorage.setItem("profile", JSON.stringify(data.data));
+                    setImageUrl(data.data.data.imageUrl)
+                }
                 setProfile(true)
                 setShowForm(false)
                 console.log(response)
@@ -227,6 +234,7 @@ const YourProfile = ()=> {
         try{
             const userprofile = JSON.parse(localStorage.getItem("profile"));
             await axios.post("/profile/delete-profile", {profileID:userprofile.data.profileId},{withCredentials: true})
+            localStorage.removeItem("profile");
             setOpen(false)
             navigate(0);
         }catch(err){

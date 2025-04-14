@@ -61,7 +61,6 @@ const YourProfile = ()=> {
     const [showForm, setShowForm] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [loginUser, setLoginUser] = useState('')
-    // const [editWindow, setEditWindow] = useState(false)
     const [profileUser, setProfileUser] = useState('')
     const [myOpportunities, setMyOpportunities] = useState([])
     const [toDelete, setToDelete] = useState('')
@@ -139,18 +138,18 @@ const YourProfile = ()=> {
 
     const fetchOpportunity = async () => {
         try{
-            const user = JSON.parse(localStorage.getItem("profile"));
-            const data = await axios.post("/opportunity/get-opportunity", {authorId:user.data.profileId}, { withCredentials: true })
-            if (data.status === 201) {
-                localStorage.setItem("myopportunities", JSON.stringify(data.data));
-            }
+            // const user = JSON.parse(localStorage.getItem("profile"));
+            // const data = await axios.post("/opportunity/get-opportunity", {authorId:user.data.profileId}, { withCredentials: true })
+            // if (data.status === 201) {
+            //     localStorage.setItem("myopportunities", JSON.stringify(data.data));
+            // }
             const check = JSON.parse(localStorage.getItem("myopportunities"));
-            setMyOpportunities(check.data);
             if(check.data.length===0){
                 setProfile(false)
             }else{
                 setProfile(true)
             }
+            setMyOpportunities(check.data);
         }catch(error){
             console.log(error)
             setProfile(false)
@@ -160,6 +159,23 @@ const YourProfile = ()=> {
     useEffect(  ()=>{
         fetchOpportunity();
     },[])
+
+    // useEffect(  ()=>{
+    //     const fetchMyReq = async () => {
+    //         try{
+    //             const user = JSON.parse(localStorage.getItem("profile"));
+    //             const data = await axios.post("/opportunity/get-opportunity", {authorId:user.data.profileId}, { withCredentials: true })
+    //             if (data.status === 201) {
+    //                 localStorage.setItem("myopportunities", JSON.stringify(data.data));
+    //             }
+    //         }catch(error){
+    //             console.log(error)
+    //         }
+    //     }
+    //
+    //     fetchMyReq()
+    //
+    // },[])
 
     // useEffect(  ()=>{
     //     setSuccessMessage(true)
@@ -201,6 +217,11 @@ const YourProfile = ()=> {
             const response = await axios.post("/opportunity/create-opportunity", updatedFormData, { withCredentials: true })
 
             console.log("Response from server:", response);
+            const user1 = JSON.parse(localStorage.getItem("profile"));
+            const data = await axios.post("/opportunity/get-opportunity", {authorId:user1.data.profileId}, { withCredentials: true })
+            if (data.status === 201) {
+                localStorage.setItem("myopportunities", JSON.stringify(data.data));
+            }
             setProfile(true)
             setShowForm(false)
             navigate(0)
@@ -260,6 +281,11 @@ const YourProfile = ()=> {
         try{
             await axios.post("/opportunity/delete-opportunity", {opportunityId:toDelete},{withCredentials: true})
             setOpen(false)
+            const user1 = JSON.parse(localStorage.getItem("profile"));
+            const data = await axios.post("/opportunity/get-opportunity", {authorId:user1.data.profileId}, { withCredentials: true })
+            if (data.status === 201) {
+                localStorage.setItem("myopportunities", JSON.stringify(data.data));
+            }
             navigate(0);
         }catch(err){
             console.log(err)
