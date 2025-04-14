@@ -280,12 +280,12 @@ const YourProfile = ()=> {
     const DeleteProfile = async () =>{
         try{
             await axios.post("/opportunity/delete-opportunity", {opportunityId:toDelete},{withCredentials: true})
-            setOpen(false)
             const user1 = JSON.parse(localStorage.getItem("profile"));
             const data = await axios.post("/opportunity/get-opportunity", {authorId:user1.data.profileId}, { withCredentials: true })
             if (data.status === 201) {
                 localStorage.setItem("myopportunities", JSON.stringify(data.data));
             }
+            setOpen(false)
             navigate(0);
         }catch(err){
             console.log(err)
