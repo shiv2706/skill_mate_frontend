@@ -9,6 +9,7 @@ import {Bars3Icon, XMarkIcon, ExclamationTriangleIcon, CheckCircleIcon} from '@h
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import {SparklesIcon} from "@heroicons/react/24/outline/index.js";
+import Loading from "../components/Loading.jsx";
 
 
 const navigation = [
@@ -66,6 +67,7 @@ const YourProfile = ()=> {
     const [toDelete, setToDelete] = useState('')
     const [successMessage, setSuccessMessage] = useState(false)
     const [imageUrl, setImageUrl] = useState('')
+    const [loading, setLoading] = useState(false);
 
     useEffect(()=>{
         const pro = JSON.parse(localStorage.getItem("profile"));
@@ -279,12 +281,14 @@ const YourProfile = ()=> {
 
     const DeleteProfile = async () =>{
         try{
+            setLoading(true);
             await axios.post("/opportunity/delete-opportunity", {opportunityId:toDelete},{withCredentials: true})
             const user1 = JSON.parse(localStorage.getItem("profile"));
             const data = await axios.post("/opportunity/get-opportunity", {authorId:user1.data.profileId}, { withCredentials: true })
             if (data.status === 201) {
                 localStorage.setItem("myopportunities", JSON.stringify(data.data));
             }
+            setLoading(false);
             setOpen(false)
             navigate(0);
         }catch(err){
@@ -634,6 +638,7 @@ const YourProfile = ()=> {
                                                 >
                                                     Cancel
                                                 </button>
+                                                {loading && <Loading/>}
                                             </div>
                                         </DialogPanel>
                                     </div>
