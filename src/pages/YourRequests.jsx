@@ -638,7 +638,9 @@ const YourProfile = ()=> {
                                                 >
                                                     Cancel
                                                 </button>
-                                                {loading && <Loading/>}
+                                                <div className="mr-4">
+                                                    {loading && <Loading/>}
+                                                </div>
                                             </div>
                                         </DialogPanel>
                                     </div>
