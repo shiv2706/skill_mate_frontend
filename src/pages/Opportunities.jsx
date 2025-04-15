@@ -346,7 +346,8 @@ const Opportunities = ()=> {
                                 </div>
                                 <div className="space-y-2 py-6">
                                     <button
-                                        className="sm:text-xl font-semibold text-gray-900 cursor-pointer transition-transform duration-300 hover:scale-110 ">
+                                        className="sm:text-xl font-semibold text-gray-900 cursor-pointer transition-transform duration-300 hover:scale-110"
+                                    onClick={ProfileHandler}>
                                         My Profile
                                     </button>
                                 </div>
