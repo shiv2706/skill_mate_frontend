@@ -94,8 +94,8 @@ const People = ()=> {
 
     const fetchOpportunity = async () => {
         try{
-            const user = JSON.parse(localStorage.getItem("profile"));
-            const data = await axios.post("/opportunity/get-opportunity", {authorId:user.data.profileId}, { withCredentials: true })
+            const user = JSON.parse(localStorage.getItem("user"));
+            const data = await axios.post("/opportunity/get-opportunity", {authorId:user._id}, { withCredentials: true })
             if (data.status === 201) {
                 localStorage.setItem("myopportunities", JSON.stringify(data.data));
             }
