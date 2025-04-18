@@ -653,7 +653,7 @@ const YourProfile = ()=> {
                                     <div className="mt-4 flex md:mt-0 ">
                                         <button
                                             type="button" onClick={AddProfileHandler}
-                                            className="ml-0 inline-flex items-center rounded-md bg-indigo-600 px-3 py-3 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                            className="ml-0 inline-flex cursor-pointer items-center rounded-md bg-indigo-600 px-3 py-3 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                         >
                                             <PlusIcon aria-hidden="true" className=" size-5"/>Add Request
                                         </button>
