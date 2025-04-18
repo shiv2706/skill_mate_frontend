@@ -3,13 +3,14 @@ import '../index.css'
 import { useState , useEffect} from 'react'
 import {Link, useNavigate} from "react-router-dom";
 import {Dialog, DialogBackdrop, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/react'
-import {ArrowTopRightOnSquareIcon, ChevronDownIcon, PlusIcon} from '@heroicons/react/20/solid'
+import {ArrowTopRightOnSquareIcon, ChevronDownIcon, ChevronRightIcon, PlusIcon} from '@heroicons/react/20/solid'
 import axios from "axios";
 import {Bars3Icon, XMarkIcon, ExclamationTriangleIcon, CheckCircleIcon} from '@heroicons/react/24/outline'
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import {SparklesIcon} from "@heroicons/react/24/outline/index.js";
 import Loading from "../components/Loading.jsx";
+
 
 
 const navigation = [
@@ -68,6 +69,9 @@ const YourProfile = ()=> {
     const [successMessage, setSuccessMessage] = useState(false)
     const [imageUrl, setImageUrl] = useState('')
     const [loading, setLoading] = useState(false);
+    const [applications, setApplications] = useState(false)
+    const [applicationRequests, setApplicationRequests] = useState([])
+    const [foundApplications, setFoundApplications] = useState(false)
 
     useEffect(()=>{
         const pro = JSON.parse(localStorage.getItem("profile"));
@@ -162,30 +166,24 @@ const YourProfile = ()=> {
         fetchOpportunity();
     },[])
 
-    // useEffect(  ()=>{
-    //     const fetchMyReq = async () => {
-    //         try{
-    //             const user = JSON.parse(localStorage.getItem("profile"));
-    //             const data = await axios.post("/opportunity/get-opportunity", {authorId:user.data.profileId}, { withCredentials: true })
-    //             if (data.status === 201) {
-    //                 localStorage.setItem("myopportunities", JSON.stringify(data.data));
-    //             }
-    //         }catch(error){
-    //             console.log(error)
-    //         }
-    //     }
-    //
-    //     fetchMyReq()
-    //
-    // },[])
+    const fetchApplications = async () => {
+        try{
+            const Applicationrequests = JSON.parse(localStorage.getItem("myapplicationrequests"));
+            if(Applicationrequests.length===0){
+                setFoundApplications(false)
+            }else{
+                setFoundApplications(true)
+            }
+            setApplicationRequests(Applicationrequests);
+        }catch(error){
+            console.log(error)
+        }
+    }
 
-    // useEffect(  ()=>{
-    //     setSuccessMessage(true)
-    // },[added])
-
-    // useEffect(() => {
-    //     console.log("Profile Data:", profileData); // This will now log when profileData updates
-    // }, [profileData]);
+    useEffect(()=>{
+        fetchApplications();
+        console.log(applicationRequests)
+    },[])
 
 
     const handleSkillChange = (e) => {
@@ -241,6 +239,7 @@ const YourProfile = ()=> {
             if(user){
                 setShowForm(true);
                 setProfile(false);
+                setApplications(false)
             }else{
                 alert("Please Create Your Profile first");
             }
@@ -309,6 +308,23 @@ const YourProfile = ()=> {
 
     const AiHandler=()=>{
         navigate("/aisearch")
+    }
+
+    const DeleteApplication = async (value) =>{
+        try{
+            await axios.post("/application/delete-application", {applicationId:value},{withCredentials: true})
+            const user = JSON.parse(localStorage.getItem("user"));
+            const data = await axios.post("/application/get-application-requests", {authorId:user._id}, {withCredentials:true})
+            if (data.status === 201) {
+                localStorage.setItem("myapplicationrequests", JSON.stringify(data.data.data));
+            }
+            setApplications(false)
+            fetchApplications()
+            setApplications(true)
+
+        }catch(err){
+            console.log(err)
+        }
     }
 
 
@@ -575,11 +591,37 @@ const YourProfile = ()=> {
                     </div>
                     <div className="py-24 sm:py-15">
                         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                            {!showForm &&
+                            {!showForm && !profile &&
                                 <h1 className="text-4xl text-center mb-5 font-serif  text-gray-900 sm:text-6xl">
                                     Your Requests
                                 </h1>}
-                            {/*Delete Dialog Box*/}
+                            {profile && <div className="md:flex mb-3 md:items-center py-3 pl-3 md:justify-between border-b border-gray-300">
+                                <div className="min-w-0 flex-1">
+                                    <h1 className="text-3xl font-serif text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight">
+                                        Your Requests
+                                    </h1>
+                                </div>
+                                <div className="mt-4 flex md:mt-0 md:ml-4">
+                                    {!applications && <button
+                                        type="button" onClick={()=> setApplications(true)}
+                                        className="inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+                                    >
+                                        View Applications
+                                    </button>}
+                                    {applications && <button
+                                        type="button" onClick={() => setApplications(false)}
+                                        className="inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+                                    >
+                                        View Requests
+                                    </button>}
+                                    <button
+                                        type="button" onClick={AddProfileHandler}
+                                        className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                    >
+                                    <PlusIcon aria-hidden="true" className=" size-5"/>Add Request
+                                    </button>
+                                </div>
+                            </div>}
 
                             <Dialog open={open} onClose={setOpen} className="relative z-10">
                                 <DialogBackdrop
@@ -648,23 +690,23 @@ const YourProfile = ()=> {
                             </Dialog>
 
 
-                            {profile && <div className="bg-transparent">
-                                <div className="justify-items-center mb-5 mt-10">
-                                    <div className="mt-4 flex md:mt-0 ">
-                                        <button
-                                            type="button" onClick={AddProfileHandler}
-                                            className="ml-0 inline-flex cursor-pointer items-center rounded-md bg-indigo-600 px-3 py-3 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                                        >
-                                            <PlusIcon aria-hidden="true" className=" size-5"/>Add Request
-                                        </button>
-                                    </div>
-                                </div>
+                            {profile && !applications && <div className="bg-transparent mt-10">
+                                {/*<div className="justify-items-center mb-5 mt-10">*/}
+                                {/*    <div className="mt-4 flex md:mt-0 ">*/}
+                                {/*        <button*/}
+                                {/*            type="button" onClick={AddProfileHandler}*/}
+                                {/*            className="ml-0 inline-flex cursor-pointer items-center rounded-md bg-indigo-600 px-3 py-3 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"*/}
+                                {/*        >*/}
+                                {/*            <PlusIcon aria-hidden="true" className=" size-5"/>Add Request*/}
+                                {/*        </button>*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
                                 <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                     {myOpportunities.map((opportunity) => (
                                         <li key={opportunity._id}
                                             className="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow-sm">
                                             <div className="flex w-full items-center justify-between space-x-6 p-6">
-                                                <div className="flex-1 truncate">
+                                            <div className="flex-1 truncate">
                                                     <div className="flex items-center space-x-3">
                                                         <h3 className="truncate text-xl font-sans font-bold text-gray-900">{opportunity.title}</h3>
                                                     </div>
@@ -730,6 +772,63 @@ const YourProfile = ()=> {
 
                             </div>}
 
+                            {applications && foundApplications && <ul role="list" className="divide-y mt-10 divide-gray-100">
+                                {applicationRequests.map((person) => (
+                                    <li
+                                        key={person._id}
+                                        className="relative flex justify-between gap-x-6 px-4 py-5 hover:scale-101 transition-transform duration-300 sm:px-6 lg:px-8"
+                                    >
+                                        <div className="flex min-w-0 gap-x-4">
+                                            <img alt="" src={person.applicantImage}
+                                                 className="size-12 flex-none rounded-full bg-gray-50"/>
+                                            <div className="min-w-0 flex-auto">
+                                                <p className="text-sm/6 font-semibold text-gray-900">
+                                                        {person.applicantName}
+                                                </p>
+                                                <div className="mt-1 flex text-xs/5 text-gray-600">
+                                                    <span className="text-gray-900">Opportunity Applied For - </span>
+                                                    <span className="ml-1 font-bold">{person.appliedFor}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex shrink-0 items-center gap-x-4">
+                                            <div className="hidden sm:flex  sm:items-end">
+                                                <button
+                                                    type="button" onClick={()=>DeleteApplication(person._id)}
+                                                    className="inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-red-500"
+                                                >
+                                                    DELETE
+                                                </button>
+                                                <Link to={`/profiledetails/${person.applicantProfileId}`}
+                                                    type="button"
+                                                    className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                >
+                                                    View Profile<ArrowTopRightOnSquareIcon aria-hidden="true" className="ml-2 size-5"/>
+                                                </Link>
+                                            </div>
+                                            <ChevronRightIcon aria-hidden="true"
+                                                              className="lg:hidden size-5 flex-none text-gray-400"/>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>}
+
+                            {!foundApplications && applications && <div className="text-center mt-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round"
+                                     className="lucide lucide-user-round-search-icon lucide-user-round-search mx-auto size-20 text-gray-400">
+                                    <circle cx="10" cy="8" r="5"/>
+                                    <path d="M2 21a8 8 0 0 1 10.434-7.62"/>
+                                    <circle cx="18" cy="18" r="3"/>
+                                    <path d="m22 22-1.9-1.9"/>
+                                </svg>
+                                <h3 className="mt-2 text-sm font-semibold text-gray-900">Nothing to show</h3>
+                                <p className="mt-1 text-sm text-gray-500">No applications found</p>
+
+                            </div>}
+
+
                             {!profile && !showForm && <div className="text-center">
                                 <svg
                                     fill="none"
@@ -751,7 +850,7 @@ const YourProfile = ()=> {
                                 <div className="mt-6">
                                     <button
                                         type="button" onClick={AddProfileHandler}
-                                        className="inline-flex items-center transition-transform duration-300 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                        className="inline-flex items-center cursor-pointer transition-transform duration-300 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                     >
                                         <PlusIcon aria-hidden="true" className="mr-1.5 -ml-0.5 size-5"/>
                                         Post Request

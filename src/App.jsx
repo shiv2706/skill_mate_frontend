@@ -11,9 +11,6 @@ import OpportunityDetails from "./pages/OpportunityDetails.jsx";
 import AiSearch from "./pages/AiSearch.jsx";
 
 
-
-
-
 function App() {
     return (
         <>

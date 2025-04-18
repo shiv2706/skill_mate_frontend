@@ -2,13 +2,22 @@
 import '../index.css'
 import { useState , useEffect} from 'react'
 import {Link, Navigate, useNavigate, useParams} from "react-router-dom";
-import { Dialog, DialogPanel } from '@headlessui/react'
+import { Dialog, DialogPanel,DialogBackdrop, DialogTitle } from '@headlessui/react'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon,EnvelopeIcon, PhoneIcon } from '@heroicons/react/20/solid'
 
-import {Bars3Icon, XMarkIcon, BuildingOffice2Icon, ChatBubbleBottomCenterIcon, MapPinIcon} from '@heroicons/react/24/outline'
+import {
+    Bars3Icon,
+    XMarkIcon,
+    BuildingOffice2Icon,
+    ChatBubbleBottomCenterIcon,
+    MapPinIcon,
+    ExclamationTriangleIcon
+} from '@heroicons/react/24/outline'
 import axios from "axios";
 import {SparklesIcon} from "@heroicons/react/24/outline/index.js";
+import {ArrowTopRightOnSquareIcon} from "@heroicons/react/20/solid/index.js";
+import Loading from "../components/Loading.jsx";
 
 
 const navigation = [
@@ -63,6 +72,7 @@ const OpportunityDetails = ()=> {
     const [loginUser, setLoginUser] = useState('')
     const [opportunityDetails, setOpportunityDetails] = useState([])
     const [imageUrl, setImageUrl] = useState('')
+    const [open, setOpen] = useState(false)
 
     useEffect(()=>{
         const pro = JSON.parse(localStorage.getItem("profile"));
@@ -78,12 +88,14 @@ const OpportunityDetails = ()=> {
             const oppDetails = await axios.post('/opportunity/get-opportunity-details', {_id:id},{withCredentials: true});
             console.log(oppDetails.data.data);
             setOpportunityDetails(oppDetails.data.data)
-            console.log("details of opp:" + JSON.stringify(opportunityDetails[0]))
+            console.log("details of opp:" + JSON.stringify(oppDetails.data.data))
             console.log(id)
         }catch (err){
             console.log(err)
         }
     }
+
+
 
     useEffect(() => {
         getOpportunityDetails()
@@ -129,6 +141,25 @@ const OpportunityDetails = ()=> {
 
     const AiHandler=()=>{
         navigate("/aisearch")
+    }
+
+    const ApplicationHandler = async ()=>{
+        try{
+            const user = JSON.parse(localStorage.getItem("profile"));
+            if(!user || !user.data.profileId || !user.data.name){
+                alert("Make Your Profile first");
+            }else if(user.data.profileId === opportunityDetails.authorId){
+                alert("Cannot apply to your own request");
+            }else{
+                const response = await axios.post("/application/create-application",{authorId:opportunityDetails.authorId,
+                    applicantName:user.data.name, applicantImage:user.data.imageUrl, applicantProfileId:user.data.profileId,
+                    appliedFor:opportunityDetails.title} ,{withCredentials: true});
+                console.log(response.data.data)
+                setOpen(false)
+            }
+        }catch(err){
+            console.log(err)
+        }
     }
 
 
@@ -383,8 +414,75 @@ const OpportunityDetails = ()=> {
                         />
                     </div>
 
+
+
                     <div className="bg-transparent">
                         <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+                            <Dialog open={open} onClose={setOpen} className="relative z-10">
+                                <DialogBackdrop
+                                    transition
+                                    className="fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+                                />
+
+                                <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+                                    <div
+                                        className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                                        <DialogPanel
+                                            transition
+                                            className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg sm:p-6 data-closed:sm:translate-y-0 data-closed:sm:scale-95"
+                                        >
+                                            <div className="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setOpen(false)}
+                                                    className="rounded-md bg-white text-gray-400 cursor-pointer hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+                                                >
+                                                    <span className="sr-only">Close</span>
+                                                    <XMarkIcon aria-hidden="true" className="size-6"/>
+                                                </button>
+                                            </div>
+                                            <div className="sm:flex sm:items-start">
+                                                <div
+                                                    className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mx-0 sm:size-10">
+                                                    <ExclamationTriangleIcon aria-hidden="true"
+                                                                             className="size-6 text-green-600"/>
+                                                </div>
+                                                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                                    <DialogTitle as="h3"
+                                                                 className="text-base font-semibold text-gray-900">
+                                                        Confirm Application
+                                                    </DialogTitle>
+                                                    <div className="mt-2">
+                                                        <p className="text-sm text-gray-500">
+                                                            Once you apply for this role the Author of this request
+                                                            can view your Application and Profile.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                                                <button
+                                                    type="button"
+                                                    onClick={ApplicationHandler}
+                                                    className="inline-flex w-full justify-center cursor-pointer rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-700 sm:ml-3 sm:w-auto"
+                                                >
+                                                    Confirm
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setOpen(false)}
+                                                    className="mt-3 inline-flex w-full justify-center cursor-pointer rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 shadow-xs ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                {/*<div className="mr-4">*/}
+                                                {/*    {loading && <Loading/>}*/}
+                                                {/*</div>*/}
+                                            </div>
+                                        </DialogPanel>
+                                    </div>
+                                </div>
+                            </Dialog>
                             <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
                                 <div className="justify-items-center ">
                                     <li key={opportunityDetails?._id}
@@ -423,14 +521,13 @@ const OpportunityDetails = ()=> {
                                                     </a>
                                                 </div>
                                                 <div className="-ml-px hover:bg-neutral-50 flex w-0 flex-1">
-                                                    <a
-                                                        href={`tel:`}
-                                                        className="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
+                                                    <button
+                                                        onClick={()=> setOpen(true)}
+                                                        className="relative inline-flex w-0 cursor-pointer flex-1 items-center justify-center hover:bg-green-300 gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
                                                     >
-                                                        <ChatBubbleBottomCenterIcon aria-hidden="true"
-                                                                                    className="size-5 text-gray-400"/>
-                                                        Chat
-                                                    </a>
+                                                        Apply<ArrowTopRightOnSquareIcon aria-hidden="true"
+                                                                                        className="size-5 text-gray-400"/>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -438,7 +535,7 @@ const OpportunityDetails = ()=> {
                                 </div>
 
                                 {/* Person info */}
-                                <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0 ">
+                                <div className="mt-10 px-4 py- sm:mt-16 sm:px-0 lg:mt-0 ">
                                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">Title- {opportunityDetails?.title}</h1>
 
                                     <div className="mt-1">
