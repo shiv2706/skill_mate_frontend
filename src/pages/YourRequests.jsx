@@ -368,7 +368,7 @@ const YourProfile = ()=> {
                         <button
                             className="flex sm:text-xl font-semibold text-gray-900 cursor-pointer transition-transform duration-300 hover:scale-110 hover:text-indigo-500"
                             onClick={AiHandler}>
-                            AI Search <SparklesIcon aria-hidden="true" className="-mr-1 size-5 text-black-400"/>
+                            AI Search <SparklesIcon aria-hidden="true" className="-mr-1 size-3 text-black-400"/>
                         </button>
                     </div>
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end ">
