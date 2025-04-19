@@ -18,6 +18,8 @@ import axios from "axios";
 import {SparklesIcon} from "@heroicons/react/24/outline/index.js";
 import {ArrowTopRightOnSquareIcon} from "@heroicons/react/20/solid/index.js";
 import Loading from "../components/Loading.jsx";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 
 const navigation = [
@@ -75,6 +77,15 @@ const OpportunityDetails = ()=> {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false);
     const [notActive, setNotActive] = useState(false);
+    const [successMessage, setSuccessMessage] = useState(false);
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setSuccessMessage(false);
+    };
 
     useEffect(()=>{
         const pro = JSON.parse(localStorage.getItem("profile"));
@@ -165,6 +176,7 @@ const OpportunityDetails = ()=> {
                 console.log(response.data.data)
                 setOpen(false)
                 setLoading(false)
+                setSuccessMessage(true)
                 setTimeout(() => {
                     setNotActive(false)
                 }, 2000)
@@ -180,6 +192,18 @@ const OpportunityDetails = ()=> {
 
     return (
         <div className="bg-white ">
+            <div>
+                <Snackbar open={successMessage} autoHideDuration={3000} onClose={handleClose}>
+                    <Alert
+                        onClose={handleClose}
+                        severity="success"
+                        variant="filled"
+                        sx={{width: '100%'}}
+                    >
+                        Application Posted Successfully !
+                    </Alert>
+                </Snackbar>
+            </div>
             {/* Header */}
             <header className="absolute border-b border-gray-300 inset-x-0 top-0 z-50 ">
                 <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
@@ -430,7 +454,6 @@ const OpportunityDetails = ()=> {
                     </div>
 
 
-
                     <div className="bg-transparent">
                         <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
                             <Dialog open={open} onClose={setOpen} className="relative z-10">
@@ -505,7 +528,8 @@ const OpportunityDetails = ()=> {
                                         <div className="flex flex-1 flex-col p-8">
                                             <img alt="" src={opportunityDetails?.imageUrl}
                                                  className="mx-auto size-32 shrink-0 rounded-full"/>
-                                            <h3 className="mt-2 mb-3 text-sm font-bold text-gray-900">Posted By- {opportunityDetails?.authorName}</h3>
+                                            <h3 className="mt-2 mb-3 text-sm font-bold text-gray-900">Posted
+                                                By- {opportunityDetails?.authorName}</h3>
                                             <dl className="mt-1 flex grow flex-col justify-between">
                                                 <dt className="sr-only">Title</dt>
                                                 <dd className="text-sm font-bold text-gray-500">Required Skills</dd>
@@ -537,7 +561,7 @@ const OpportunityDetails = ()=> {
                                                 </div>
                                                 <div className="-ml-px hover:bg-neutral-50 flex w-0 flex-1">
                                                     <button
-                                                        onClick={()=> setOpen(true)}
+                                                        onClick={() => setOpen(true)}
                                                         className="relative inline-flex w-0 cursor-pointer flex-1 items-center justify-center hover:bg-green-300 gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
                                                     >
                                                         Apply<ArrowTopRightOnSquareIcon aria-hidden="true"
@@ -567,7 +591,8 @@ const OpportunityDetails = ()=> {
 
 
                                     <div className="mt-7">
-                                        <h1 className="text-xl font-semibold mb-1 border-b ">Description of Requirement</h1>
+                                        <h1 className="text-xl font-semibold mb-1 border-b ">Description of
+                                            Requirement</h1>
 
                                         <div className="space-y-6 text-base text-gray-700">
                                             <h1 className="">{opportunityDetails?.description}</h1>
