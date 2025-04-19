@@ -791,7 +791,7 @@ const YourProfile = ()=> {
                                 </ul>
 
                             </div>}
-                            {applications && <div className="mr-4">
+                            {applications && !open && <div className="mr-4">
                                 {loading && <Loading/>}
                             </div>}
 
