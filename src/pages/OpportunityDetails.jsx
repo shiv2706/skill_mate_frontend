@@ -73,6 +73,8 @@ const OpportunityDetails = ()=> {
     const [opportunityDetails, setOpportunityDetails] = useState([])
     const [imageUrl, setImageUrl] = useState('')
     const [open, setOpen] = useState(false)
+    const [loading, setLoading] = useState(false);
+    const [notActive, setNotActive] = useState(false);
 
     useEffect(()=>{
         const pro = JSON.parse(localStorage.getItem("profile"));
@@ -145,20 +147,33 @@ const OpportunityDetails = ()=> {
 
     const ApplicationHandler = async ()=>{
         try{
+            setNotActive(true)
+            setLoading(true)
             const user = JSON.parse(localStorage.getItem("profile"));
             if(!user || !user.data.profileId || !user.data.name){
                 alert("Make Your Profile first");
+                setLoading(false)
+                setNotActive(false)
             }else if(user.data.profileId === opportunityDetails.authorId){
                 alert("Cannot apply to your own request");
+                setLoading(false)
+                setNotActive(false)
             }else{
                 const response = await axios.post("/application/create-application",{authorId:opportunityDetails.authorId,
                     applicantName:user.data.name, applicantImage:user.data.imageUrl, applicantProfileId:user.data.profileId,
                     appliedFor:opportunityDetails.title} ,{withCredentials: true});
                 console.log(response.data.data)
                 setOpen(false)
+                setLoading(false)
+                setTimeout(() => {
+                    setNotActive(false)
+                }, 2000)
+
             }
         }catch(err){
             console.log(err)
+            setLoading(false)
+            setNotActive(false)
         }
     }
 
@@ -462,7 +477,7 @@ const OpportunityDetails = ()=> {
                                             </div>
                                             <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                                                 <button
-                                                    type="button"
+                                                    type="button" disabled={notActive}
                                                     onClick={ApplicationHandler}
                                                     className="inline-flex w-full justify-center cursor-pointer rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-700 sm:ml-3 sm:w-auto"
                                                 >
@@ -475,9 +490,9 @@ const OpportunityDetails = ()=> {
                                                 >
                                                     Cancel
                                                 </button>
-                                                {/*<div className="mr-4">*/}
-                                                {/*    {loading && <Loading/>}*/}
-                                                {/*</div>*/}
+                                                <div className="mr-4">
+                                                    {loading && <Loading/>}
+                                                </div>
                                             </div>
                                         </DialogPanel>
                                     </div>
