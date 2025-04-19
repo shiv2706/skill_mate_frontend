@@ -72,6 +72,8 @@ const YourProfile = ()=> {
     const [applications, setApplications] = useState(false)
     const [applicationRequests, setApplicationRequests] = useState([])
     const [foundApplications, setFoundApplications] = useState(false)
+    const [applicationToDelete, setApplicationToDelete] = useState('')
+    const [profileToView, setProfileToView] = useState('')
 
     useEffect(()=>{
         const pro = JSON.parse(localStorage.getItem("profile"));
@@ -144,11 +146,6 @@ const YourProfile = ()=> {
 
     const fetchOpportunity = async () => {
         try{
-            // const user = JSON.parse(localStorage.getItem("profile"));
-            // const data = await axios.post("/opportunity/get-opportunity", {authorId:user.data.profileId}, { withCredentials: true })
-            // if (data.status === 201) {
-            //     localStorage.setItem("myopportunities", JSON.stringify(data.data));
-            // }
             const check = JSON.parse(localStorage.getItem("myopportunities"));
             if(check.data.length===0){
                 setProfile(false)
@@ -196,11 +193,6 @@ const YourProfile = ()=> {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // const EditHandler = ()=> {
-    //     setProfile(false);
-    //     setShowForm(true);
-    //     setEditWindow(true)
-    // }
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // Prevent page reload
@@ -250,9 +242,6 @@ const YourProfile = ()=> {
 
     }
 
-    const LoginHandler = () =>{
-        navigate("/login")
-    }
 
     const LogoutHandler = async ()=> {
         try{
@@ -312,6 +301,7 @@ const YourProfile = ()=> {
 
     const DeleteApplication = async (value) =>{
         try{
+            setLoading(true)
             await axios.post("/application/delete-application", {applicationId:value},{withCredentials: true})
             const user = JSON.parse(localStorage.getItem("user"));
             const data = await axios.post("/application/get-application-requests", {authorId:user._id}, {withCredentials:true})
@@ -321,10 +311,17 @@ const YourProfile = ()=> {
             setApplications(false)
             fetchApplications()
             setApplications(true)
+            setLoading(false)
 
         }catch(err){
             console.log(err)
         }
+    }
+
+    const DeleteModalMobile = (value1,value2)=>{
+        setOpen(true)
+        setApplicationToDelete(value1)
+        setProfileToView(value2)
     }
 
 
@@ -640,32 +637,36 @@ const YourProfile = ()=> {
                                                 <button
                                                     type="button"
                                                     onClick={() => setOpen(false)}
-                                                    className="rounded-md bg-white text-gray-400 cursor-pointer hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+                                                    className="rounded-md bg-white  text-gray-400 cursor-pointer hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
                                                 >
                                                     <span className="sr-only">Close</span>
-                                                    <XMarkIcon aria-hidden="true" className="size-6"/>
+                                                    <XMarkIcon aria-hidden="true" className="size-6 sm:visible"/>
                                                 </button>
                                             </div>
                                             <div className="sm:flex sm:items-start">
-                                                <div
+                                                {!applications && <div
                                                     className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mx-0 sm:size-10">
                                                     <ExclamationTriangleIcon aria-hidden="true"
                                                                              className="size-6 text-green-600"/>
-                                                </div>
+                                                </div>}
                                                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                                    <DialogTitle as="h3"
+                                                    {!applications && <DialogTitle as="h3"
                                                                  className="text-base font-semibold text-gray-900">
                                                         Close Request
-                                                    </DialogTitle>
-                                                    <div className="mt-2">
+                                                    </DialogTitle>}
+                                                    {applications &&  <DialogTitle as="h3"
+                                                                                   className="text-base font-bold text-gray-900">
+                                                        OPTIONS
+                                                    </DialogTitle> }
+                                                    {!applications && <div className="mt-2">
                                                         <p className="text-sm text-gray-500">
                                                             Are you sure you want to close this request? this request
                                                             will no longer be visible under the opportunities section.
                                                         </p>
-                                                    </div>
+                                                    </div>}
                                                 </div>
                                             </div>
-                                            <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                                            {!applications && <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                                                 <button
                                                     type="button"
                                                     onClick={(DeleteProfile)}
@@ -683,7 +684,25 @@ const YourProfile = ()=> {
                                                 <div className="mr-4">
                                                     {loading && <Loading/>}
                                                 </div>
-                                            </div>
+                                            </div>}
+                                            {applications && <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                                                <button
+                                                    type="button" onClick={() => DeleteApplication(applicationToDelete)}
+                                                    className="inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-red-500"
+                                                >
+                                                    DELETE
+                                                </button>
+                                                <Link to={`/profiledetails/${profileToView}`}
+                                                      type="button"
+                                                      className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                >
+                                                    View Profile<ArrowTopRightOnSquareIcon aria-hidden="true"
+                                                                                           className="ml-2 size-5"/>
+                                                </Link>
+                                                <div className="mr-4">
+                                                    {loading && <Loading/>}
+                                                </div>
+                                            </div>}
                                         </DialogPanel>
                                     </div>
                                 </div>
@@ -702,7 +721,7 @@ const YourProfile = ()=> {
                                 {/*    </div>*/}
                                 {/*</div>*/}
                                 <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                    {myOpportunities.map((opportunity) => (
+                                {myOpportunities.map((opportunity) => (
                                         <li key={opportunity._id}
                                             className="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow-sm">
                                             <div className="flex w-full items-center justify-between space-x-6 p-6">
@@ -771,8 +790,12 @@ const YourProfile = ()=> {
                                 </ul>
 
                             </div>}
+                            {applications && <div className="mr-4">
+                                {loading && <Loading/>}
+                            </div>}
 
-                            {applications && foundApplications && <ul role="list" className="divide-y mt-10 divide-gray-100">
+                            {applications && foundApplications &&
+                                <ul role="list" className="divide-y mt-10 divide-gray-100">
                                 {applicationRequests.map((person) => (
                                     <li
                                         key={person._id}
@@ -794,20 +817,21 @@ const YourProfile = ()=> {
                                         <div className="flex shrink-0 items-center gap-x-4">
                                             <div className="hidden sm:flex  sm:items-end">
                                                 <button
-                                                    type="button" onClick={()=>DeleteApplication(person._id)}
+                                                    type="button" onClick={() => DeleteApplication(person._id)}
                                                     className="inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-red-500"
                                                 >
                                                     DELETE
                                                 </button>
                                                 <Link to={`/profiledetails/${person.applicantProfileId}`}
-                                                    type="button"
-                                                    className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                      type="button"
+                                                      className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                                 >
-                                                    View Profile<ArrowTopRightOnSquareIcon aria-hidden="true" className="ml-2 size-5"/>
+                                                    View Profile<ArrowTopRightOnSquareIcon aria-hidden="true"
+                                                                                           className="ml-2 size-5"/>
                                                 </Link>
                                             </div>
-                                            <ChevronRightIcon aria-hidden="true"
-                                                              className="lg:hidden size-5 flex-none text-gray-400"/>
+                                            <ChevronRightIcon aria-hidden="true" onClick={()=> DeleteModalMobile(person._id, person.applicantProfileId)}
+                                                              className="sm:hidden size-5 flex-none text-gray-400"/>
                                         </div>
                                     </li>
                                 ))}
