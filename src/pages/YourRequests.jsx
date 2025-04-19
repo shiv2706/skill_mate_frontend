@@ -312,6 +312,7 @@ const YourProfile = ()=> {
             fetchApplications()
             setApplications(true)
             setLoading(false)
+            setOpen(false)
 
         }catch(err){
             console.log(err)
