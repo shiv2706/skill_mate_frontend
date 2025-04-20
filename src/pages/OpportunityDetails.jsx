@@ -80,6 +80,7 @@ const OpportunityDetails = ()=> {
     const [successMessage, setSuccessMessage] = useState(false);
     const [myApplications, setMyApplications] = useState([])
     const [applied, setApplied] = useState(false)
+    const [withdrawn, setWithdrawn] = useState(false)
 
 
     const fetchMyApplications = async () => {
@@ -119,6 +120,7 @@ const OpportunityDetails = ()=> {
         }
 
         setSuccessMessage(false);
+        setWithdrawn(false);
     };
 
     useEffect(()=>{
@@ -229,6 +231,29 @@ const OpportunityDetails = ()=> {
         }
     }
 
+    const WithdrawApplicationHandler = async ()=>{
+        try{
+            setNotActive(true)
+            setLoading(true)
+            const user = JSON.parse(localStorage.getItem("profile"));
+            await axios.post("/application/withdraw-application",{applicantId:user.data.profileId, jobTitle:opportunityDetails.title },{withCredentials: true});
+            setApplied(false)
+            setOpen(false)
+            setLoading(false)
+            setWithdrawn(true)
+            setTimeout(() => {
+                setNotActive(false)
+            }, 2000)
+            const userx = JSON.parse(localStorage.getItem("user"));
+            const data = await axios.post("/application/get-my-applications", {applicantId:userx._id}, {withCredentials:true})
+            if (data.status === 201) {
+                localStorage.setItem("myapplications", JSON.stringify(data.data.data));
+            }
+        }catch(err){
+            console.log(err)
+        }
+    }
+
 
     return (
         <div className="bg-white ">
@@ -241,6 +266,18 @@ const OpportunityDetails = ()=> {
                         sx={{width: '100%'}}
                     >
                         Application Posted Successfully !
+                    </Alert>
+                </Snackbar>
+            </div>
+            <div>
+                <Snackbar open={withdrawn} autoHideDuration={3000} onClose={handleClose}>
+                    <Alert
+                        onClose={handleClose}
+                        severity="success"
+                        variant="filled"
+                        sx={{width: '100%'}}
+                    >
+                        Application Withdrawn Successfully !
                     </Alert>
                 </Snackbar>
             </div>
@@ -526,26 +563,43 @@ const OpportunityDetails = ()=> {
                                                                              className="size-6 text-green-600"/>
                                                 </div>
                                                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                                    <DialogTitle as="h3"
-                                                                 className="text-base font-semibold text-gray-900">
+                                                    {!applied && <DialogTitle as="h3"
+                                                                              className="text-base font-semibold text-gray-900">
                                                         Confirm Application
-                                                    </DialogTitle>
-                                                    <div className="mt-2">
+                                                    </DialogTitle>}
+                                                    {applied && <DialogTitle as="h3"
+                                                                             className="text-base font-semibold text-gray-900">
+                                                        Withdraw Application
+                                                    </DialogTitle>}
+                                                    {!applied && <div className="mt-2">
                                                         <p className="text-sm text-gray-500">
                                                             Once you apply for this role the Author of this request
                                                             can view your Application and Profile.
                                                         </p>
-                                                    </div>
+                                                    </div>}
+                                                    {applied && <div className="mt-2">
+                                                        <p className="text-sm text-gray-500">
+                                                            If you withdraw this application the Author of this request
+                                                            can no longer view your Application.
+                                                        </p>
+                                                    </div>}
                                                 </div>
                                             </div>
                                             <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                                                <button
+                                                {!applied && <button
                                                     type="button" disabled={notActive}
                                                     onClick={ApplicationHandler}
                                                     className="inline-flex w-full justify-center cursor-pointer rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-700 sm:ml-3 sm:w-auto"
                                                 >
                                                     Confirm
-                                                </button>
+                                                </button>}
+                                                {applied && <button
+                                                    type="button" disabled={notActive}
+                                                    onClick={WithdrawApplicationHandler}
+                                                    className="inline-flex w-full justify-center cursor-pointer rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-700 sm:ml-3 sm:w-auto"
+                                                >
+                                                    Withdraw
+                                                </button>}
                                                 <button
                                                     type="button"
                                                     onClick={() => setOpen(false)}
@@ -607,11 +661,11 @@ const OpportunityDetails = ()=> {
                                                         Apply<ArrowTopRightOnSquareIcon aria-hidden="true"
                                                                                         className="size-5 text-gray-400"/>
                                                     </button>}
-                                                    {applied && <button
-                                                        className="relative inline-flex w-0 cursor-pointer flex-1 items-center justify-center hover:bg-green-300 gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
+                                                    {applied && <button onClick={() => setOpen(true)}
+                                                                        className="relative inline-flex w-0 cursor-pointer flex-1 items-center justify-center hover:bg-green-300 gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
                                                     >
                                                         Applied<CheckCircleIcon aria-hidden="true"
-                                                                                        className="size-5 text-gray-400"/>
+                                                                                className="size-5 text-gray-400"/>
                                                     </button>}
                                                 </div>
                                             </div>
