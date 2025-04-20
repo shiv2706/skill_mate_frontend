@@ -124,6 +124,21 @@ const People = ()=> {
         FetchApplicationRequest();
     },[])
 
+    const FetchMyApplications = async()=>{
+        try{
+            const user = JSON.parse(localStorage.getItem("user"));
+            const data = await axios.post("/application/get-my-applications", {applicantId:user._id}, {withCredentials:true})
+            if (data.status === 201) {
+                localStorage.setItem("myapplications", JSON.stringify(data.data.data));
+            }
+        }catch (err){
+            console.log(err)
+        }
+    }
+
+    useEffect(()=>{
+        FetchMyApplications();
+    },[])
 
     const fetchProfile = async () => {
 

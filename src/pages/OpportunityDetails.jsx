@@ -4,7 +4,7 @@ import { useState , useEffect} from 'react'
 import {Link, Navigate, useNavigate, useParams} from "react-router-dom";
 import { Dialog, DialogPanel,DialogBackdrop, DialogTitle } from '@headlessui/react'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { ChevronDownIcon,EnvelopeIcon, PhoneIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon,EnvelopeIcon, PhoneIcon, CheckCircleIcon } from '@heroicons/react/20/solid'
 
 import {
     Bars3Icon,
@@ -78,6 +78,40 @@ const OpportunityDetails = ()=> {
     const [loading, setLoading] = useState(false);
     const [notActive, setNotActive] = useState(false);
     const [successMessage, setSuccessMessage] = useState(false);
+    const [myApplications, setMyApplications] = useState([])
+    const [applied, setApplied] = useState(false)
+
+
+    const fetchMyApplications = async () => {
+        try{
+            const myapplications = JSON.parse(localStorage.getItem("myapplications"));
+            setMyApplications(myapplications);
+            console.log(myapplications)
+        }catch(error){
+            console.log(error)
+        }
+    }
+
+    useEffect(()=>{
+        fetchMyApplications();
+    },[])
+
+    const CheckIfApplied = async() => {
+        try{
+            for(let i=0; i<myApplications.length; i++){
+                if(myApplications[i].authorId === opportunityDetails.authorId){
+                    setApplied(true)
+                    console.log("Already applied")
+                    break;
+                }
+            }
+        }catch(error){
+            console.log(error)
+        }
+    }
+    useEffect(()=>{
+        CheckIfApplied();
+    })
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -177,9 +211,15 @@ const OpportunityDetails = ()=> {
                 setOpen(false)
                 setLoading(false)
                 setSuccessMessage(true)
+                setApplied(true)
                 setTimeout(() => {
                     setNotActive(false)
                 }, 2000)
+                const userx = JSON.parse(localStorage.getItem("user"));
+                const data = await axios.post("/application/get-my-applications", {applicantId:userx._id}, {withCredentials:true})
+                if (data.status === 201) {
+                    localStorage.setItem("myapplications", JSON.stringify(data.data.data));
+                }
 
             }
         }catch(err){
@@ -560,13 +600,19 @@ const OpportunityDetails = ()=> {
                                                     </a>
                                                 </div>
                                                 <div className="-ml-px hover:bg-neutral-50 flex w-0 flex-1">
-                                                    <button
+                                                    {!applied && <button
                                                         onClick={() => setOpen(true)}
                                                         className="relative inline-flex w-0 cursor-pointer flex-1 items-center justify-center hover:bg-green-300 gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
                                                     >
                                                         Apply<ArrowTopRightOnSquareIcon aria-hidden="true"
                                                                                         className="size-5 text-gray-400"/>
-                                                    </button>
+                                                    </button>}
+                                                    {applied && <button
+                                                        className="relative inline-flex w-0 cursor-pointer flex-1 items-center justify-center hover:bg-green-300 gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
+                                                    >
+                                                        Applied<CheckCircleIcon aria-hidden="true"
+                                                                                        className="size-5 text-gray-400"/>
+                                                    </button>}
                                                 </div>
                                             </div>
                                         </div>
