@@ -676,23 +676,35 @@ const YourProfile = ()=> {
                                     </h1>
                                 </div>
                                 <div className="mt-4 flex md:mt-0 md:ml-4">
-                                    <button
+                                    {!acceptedApplications && <button
                                         type="button" onClick={AcceptedApplicationHandler}
                                         className="mr-3 inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
                                     >
                                         Accepted Applications
-                                    </button>
-                                    <button
+                                    </button>}
+                                    {acceptedApplications && !applications && <button
+                                        type="button" onClick={AcceptedApplicationHandler}
+                                        className="mr-3 inline-flex cursor-pointer items-center rounded-md bg-blue-300 px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-blue-400"
+                                    >
+                                        Accepted Applications
+                                    </button>}
+                                    {!applications && <button
                                         type="button" onClick={ApplicationRequestsHandler}
                                         className="inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
                                     >
                                         View Applications
-                                    </button>
+                                    </button>}
+                                    {applications && !acceptedApplications && <button
+                                        type="button" onClick={ApplicationRequestsHandler}
+                                        className="inline-flex cursor-pointer items-center rounded-md bg-blue-300 px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-blue-400"
+                                    >
+                                        View Applications
+                                    </button>}
                                     <button
                                         type="button" onClick={AddProfileHandler}
                                         className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                     >
-                                    <PlusIcon aria-hidden="true" className=" size-5"/>Add Request
+                                        <PlusIcon aria-hidden="true" className=" size-5"/>Add Request
                                     </button>
                                 </div>
                             </div>}
