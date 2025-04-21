@@ -5,7 +5,7 @@ import {Link, useNavigate} from "react-router-dom";
 import {Dialog, DialogBackdrop, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/react'
 import {ArrowTopRightOnSquareIcon, ChevronDownIcon, ChevronRightIcon, PlusIcon} from '@heroicons/react/20/solid'
 import axios from "axios";
-import {Bars3Icon, XMarkIcon, ExclamationTriangleIcon, CheckCircleIcon} from '@heroicons/react/24/outline'
+import {Bars3Icon, XMarkIcon,XCircleIcon ,ExclamationTriangleIcon, CheckCircleIcon} from '@heroicons/react/24/outline'
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import {SparklesIcon} from "@heroicons/react/24/outline/index.js";
@@ -75,6 +75,23 @@ const YourProfile = ()=> {
     const [applicationToDelete, setApplicationToDelete] = useState('')
     const [profileToView, setProfileToView] = useState('')
     const [notActive, setNotActive] = useState(false);
+    const [acceptedApplications, setAcceptedApplications] = useState(false)
+    const [hasPending, setHasPending] = useState(false)
+    const [hasAccepted, setHasAccepted] = useState(false)
+
+    useEffect(() => {
+        const haspending = applicationRequests.some(
+            (application) => application.applicationStatus === 'Pending'
+        );
+        setHasPending(haspending);
+    }, [applicationRequests]);
+
+    useEffect(() => {
+        const hasaccepted = applicationRequests.some(
+            (application) => application.applicationStatus === 'Accepted'
+        );
+        setHasAccepted(hasaccepted);
+    }, [applicationRequests]);
 
     const FetchApplicationRequest = async()=>{
         try{
@@ -327,7 +344,27 @@ const YourProfile = ()=> {
     const DeleteApplication = async (value) =>{
         try{
             setLoading(true)
-            await axios.post("/application/delete-application", {applicationId:value},{withCredentials: true})
+            await axios.post("/application/delete-application", {applicationId:value, statusChange:"Rejected"},{withCredentials: true})
+            const user = JSON.parse(localStorage.getItem("user"));
+            const data = await axios.post("/application/get-application-requests", {authorId:user._id}, {withCredentials:true})
+            if (data.status === 201) {
+                localStorage.setItem("myapplicationrequests", JSON.stringify(data.data.data));
+            }
+            setApplications(false)
+            fetchApplications()
+            setApplications(true)
+            setLoading(false)
+            setOpen(false)
+
+        }catch(err){
+            console.log(err)
+        }
+    }
+
+    const AcceptApplication = async (value) =>{
+        try{
+            setLoading(true)
+            await axios.post("/application/delete-application", {applicationId:value, statusChange:"Accepted"},{withCredentials: true})
             const user = JSON.parse(localStorage.getItem("user"));
             const data = await axios.post("/application/get-application-requests", {authorId:user._id}, {withCredentials:true})
             if (data.status === 201) {
@@ -349,6 +386,18 @@ const YourProfile = ()=> {
         setApplicationToDelete(value1)
         setProfileToView(value2)
     }
+
+    const AcceptedApplicationHandler = async()=>{
+        setApplications(false)
+        setAcceptedApplications(true)
+    }
+
+    const ApplicationRequestsHandler = async()=>{
+        setApplications(true)
+        setAcceptedApplications(false)
+    }
+
+
 
 
     return (
@@ -625,18 +674,18 @@ const YourProfile = ()=> {
                                     </h1>
                                 </div>
                                 <div className="mt-4 flex md:mt-0 md:ml-4">
-                                    {!applications && <button
-                                        type="button" onClick={()=> setApplications(true)}
+                                    <button
+                                        type="button" onClick={AcceptedApplicationHandler}
+                                        className="mr-3 inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+                                    >
+                                        Accepted Applications
+                                    </button>
+                                    <button
+                                        type="button" onClick={ApplicationRequestsHandler}
                                         className="inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
                                     >
                                         View Applications
-                                    </button>}
-                                    {applications && <button
-                                        type="button" onClick={() => setApplications(false)}
-                                        className="inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
-                                    >
-                                        View Requests
-                                    </button>}
+                                    </button>
                                     <button
                                         type="button" onClick={AddProfileHandler}
                                         className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -718,6 +767,12 @@ const YourProfile = ()=> {
                                                 >
                                                     DELETE
                                                 </button>
+                                                <button
+                                                    type="button" onClick={() => AcceptApplication(applicationToDelete)}
+                                                    className="ml-3 inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-green-600"
+                                                >
+                                                    ACCEPT
+                                                </button>
                                                 <Link to={`/profiledetails/${profileToView}`}
                                                       type="button"
                                                       className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -735,17 +790,7 @@ const YourProfile = ()=> {
                             </Dialog>
 
 
-                            {profile && !applications && <div className="bg-transparent mt-10">
-                                {/*<div className="justify-items-center mb-5 mt-10">*/}
-                                {/*    <div className="mt-4 flex md:mt-0 ">*/}
-                                {/*        <button*/}
-                                {/*            type="button" onClick={AddProfileHandler}*/}
-                                {/*            className="ml-0 inline-flex cursor-pointer items-center rounded-md bg-indigo-600 px-3 py-3 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"*/}
-                                {/*        >*/}
-                                {/*            <PlusIcon aria-hidden="true" className=" size-5"/>Add Request*/}
-                                {/*        </button>*/}
-                                {/*    </div>*/}
-                                {/*</div>*/}
+                            {profile && !applications && !acceptedApplications && <div className="bg-transparent mt-10">
                                 <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {myOpportunities.map((opportunity) => (
                                         <li key={opportunity._id}
@@ -820,9 +865,9 @@ const YourProfile = ()=> {
                                 {loading && <Loading/>}
                             </div>}
 
-                            {applications && foundApplications &&
+                            {applications && !acceptedApplications && foundApplications &&
                                 <ul role="list" className="divide-y mt-10 divide-gray-100">
-                                {applicationRequests.map((person) => (
+                                {applicationRequests.filter((person) => person.applicationStatus === "Pending").map((person)=> (
                                     <li
                                         key={person._id}
                                         className="relative flex justify-between gap-x-6 px-4 py-5 hover:scale-101 transition-transform duration-300 sm:px-6 lg:px-8"
@@ -846,7 +891,13 @@ const YourProfile = ()=> {
                                                     type="button" onClick={() => DeleteApplication(person._id)}
                                                     className="inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-red-500"
                                                 >
-                                                    DELETE
+                                                    DELETE<XCircleIcon aria-hidden="true" className="ml-2 size-5"/>
+                                                </button>
+                                                <button
+                                                    type="button" onClick={() => AcceptApplication(person._id)}
+                                                    className="ml-3 inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-green-500"
+                                                >
+                                                    ACCEPT<CheckCircleIcon aria-hidden="true" className="ml-2 size-5"/>
                                                 </button>
                                                 <Link to={`/profiledetails/${person.applicantProfileId}`}
                                                       type="button"
@@ -856,14 +907,98 @@ const YourProfile = ()=> {
                                                                                            className="ml-2 size-5"/>
                                                 </Link>
                                             </div>
-                                            <ChevronRightIcon aria-hidden="true" onClick={()=> DeleteModalMobile(person._id, person.applicantProfileId)}
+                                            <ChevronRightIcon aria-hidden="true"
+                                                              onClick={() => DeleteModalMobile(person._id, person.applicantProfileId)}
                                                               className="sm:hidden size-5 flex-none text-gray-400"/>
                                         </div>
                                     </li>
                                 ))}
-                            </ul>}
+                                </ul>}
+                            {acceptedApplications && foundApplications && !applications &&
+                                <ul role="list" className="divide-y mt-10 divide-gray-100">
+                                    {applicationRequests.filter((person) => person.applicationStatus === "Accepted").map((person)=> (
+                                        <li
+                                            key={person._id}
+                                            className="relative flex justify-between gap-x-6 px-4 py-5 hover:scale-101 transition-transform duration-300 sm:px-6 lg:px-8"
+                                        >
+                                            <div className="flex min-w-0 gap-x-4">
+                                                <img alt="" src={person.applicantImage}
+                                                     className="size-12 flex-none rounded-full bg-gray-50"/>
+                                                <div className="min-w-0 flex-auto">
+                                                    <p className="text-sm/6 font-semibold text-gray-900">
+                                                        {person.applicantName}
+                                                    </p>
+                                                    <div className="mt-1 flex text-xs/5 font-bold text-gray-600">
+                                                        Applied For -
+                                                        {person.appliedFor}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex shrink-0 items-center gap-x-4">
+                                                <div className=" sm:flex  sm:items-end">
 
-                            {!foundApplications && applications && <div className="text-center mt-10">
+                                                    <Link to={`/profiledetails/${person.applicantProfileId}`}
+                                                          type="button"
+                                                          className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                    >
+                                                        View<ArrowTopRightOnSquareIcon aria-hidden="true"
+                                                                                               className="ml-2 size-5"/>
+                                                    </Link>
+                                                </div>
+                                                {/*<ChevronRightIcon aria-hidden="true"*/}
+                                                {/*                  onClick={() => DeleteModalMobile(person._id, person.applicantProfileId)}*/}
+                                                {/*                  className="sm:hidden size-5 flex-none text-gray-400"/>*/}
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>}
+
+                            {foundApplications && !hasPending && applications && <div className="text-center mt-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round"
+                                     className="lucide lucide-user-round-search-icon lucide-user-round-search mx-auto size-20 text-gray-400">
+                                    <circle cx="10" cy="8" r="5"/>
+                                    <path d="M2 21a8 8 0 0 1 10.434-7.62"/>
+                                    <circle cx="18" cy="18" r="3"/>
+                                    <path d="m22 22-1.9-1.9"/>
+                                </svg>
+                                <h3 className="mt-2 text-sm font-semibold text-gray-900">Nothing to show</h3>
+                                <p className="mt-1 text-sm text-gray-500">No applications found</p>
+
+                            </div>}
+
+                            {!foundApplications &&  applications && <div className="text-center mt-10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                         stroke-linejoin="round"
+                                         className="lucide lucide-user-round-search-icon lucide-user-round-search mx-auto size-20 text-gray-400">
+                                        <circle cx="10" cy="8" r="5"/>
+                                        <path d="M2 21a8 8 0 0 1 10.434-7.62"/>
+                                        <circle cx="18" cy="18" r="3"/>
+                                        <path d="m22 22-1.9-1.9"/>
+                                    </svg>
+                                    <h3 className="mt-2 text-sm font-semibold text-gray-900">Nothing to show</h3>
+                                    <p className="mt-1 text-sm text-gray-500">No applications found</p>
+
+                                </div>}
+
+                            {foundApplications && !hasAccepted && acceptedApplications && <div className="text-center mt-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round"
+                                     className="lucide lucide-user-round-search-icon lucide-user-round-search mx-auto size-20 text-gray-400">
+                                    <circle cx="10" cy="8" r="5"/>
+                                    <path d="M2 21a8 8 0 0 1 10.434-7.62"/>
+                                    <circle cx="18" cy="18" r="3"/>
+                                    <path d="m22 22-1.9-1.9"/>
+                                </svg>
+                                <h3 className="mt-2 text-sm font-semibold text-gray-900">Nothing to show</h3>
+                                <p className="mt-1 text-sm text-gray-500">No applications found</p>
+
+                            </div>}
+
+                            {!foundApplications && acceptedApplications && <div className="text-center mt-10">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                      stroke-linejoin="round"
