@@ -149,6 +149,8 @@ const AiSearch = ()=> {
             localStorage.removeItem("user");
             localStorage.removeItem("profile");
             localStorage.removeItem("myopportunities");
+            localStorage.removeItem("myapplicationrequests");
+            localStorage.removeItem("myapplications");
             navigate("/");
         }catch(err){
             console.log(err)
