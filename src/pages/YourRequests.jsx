@@ -74,6 +74,7 @@ const YourProfile = ()=> {
     const [foundApplications, setFoundApplications] = useState(false)
     const [applicationToDelete, setApplicationToDelete] = useState('')
     const [profileToView, setProfileToView] = useState('')
+    const [notActive, setNotActive] = useState(false);
 
     const FetchApplicationRequest = async()=>{
         try{
@@ -214,6 +215,8 @@ const YourProfile = ()=> {
         e.preventDefault(); // Prevent page reload
 
         try {
+            setNotActive(true)
+            setLoading(true)
             const user = JSON.parse(localStorage.getItem("profile"));
             if (!user || !user.data.profileId || !user.data.name) {
                 console.error("User profile data is missing.");
@@ -230,10 +233,16 @@ const YourProfile = ()=> {
             if (data.status === 201) {
                 localStorage.setItem("myopportunities", JSON.stringify(data.data));
             }
+            setLoading(false)
             setProfile(true)
             setShowForm(false)
+            setTimeout(() => {
+                setNotActive(false)
+            }, 2000)
             navigate(0)
         } catch (error) {
+            setLoading(false)
+            setNotActive(false)
             console.error("Error submitting form:", error.response ? error.response.data : error.message);
             alert("Failed to submit form. Check console for more details.");
         }
@@ -1061,12 +1070,15 @@ const YourProfile = ()=> {
                                 </div>
 
                                 <div className="mt-6 flex items-center justify-end gap-x-6">
+                                    <div className="mr-4">
+                                        {loading && <Loading/>}
+                                    </div>
                                     <button onClick={FormCancelHandler}
                                             className="text-sm/6 font-semibold text-gray-900 cursor-pointer hover:scale-102">
                                         Cancel
                                     </button>
                                     <button
-                                        type="submit"
+                                        type="submit" disabled={notActive}
                                         className="rounded-md bg-indigo-600 px-3 py-2 cursor-pointer text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                     >
                                         POST
