@@ -866,7 +866,7 @@ const YourProfile = ()=> {
                             </div>}
 
                             {applications && !acceptedApplications && foundApplications &&
-                                <ul role="list" className="divide-y mt-10 divide-gray-100">
+                                <ul role="list" className="mt-10 divide-gray-100 divide-y divide-gray-100 overflow-hidden bg-transparent shadow-xs ring-1 ring-gray-900/5 sm:rounded-xl">
                                 {applicationRequests.filter((person) => person.applicationStatus === "Pending").map((person)=> (
                                     <li
                                         key={person._id}
@@ -915,11 +915,11 @@ const YourProfile = ()=> {
                                 ))}
                                 </ul>}
                             {acceptedApplications && foundApplications && !applications &&
-                                <ul role="list" className="divide-y mt-10 divide-gray-100">
+                                <ul role="list" className="mt-10 divide-gray-100 divide-y divide-gray-100 overflow-hidden bg-transparent shadow-xs ring-1 ring-gray-900/5 sm:rounded-xl">
                                     {applicationRequests.filter((person) => person.applicationStatus === "Accepted").map((person)=> (
                                         <li
                                             key={person._id}
-                                            className="relative flex justify-between gap-x-6 px-4 py-5 hover:scale-101 transition-transform duration-300 sm:px-6 lg:px-8"
+                                            className="relative flex justify-between bg- gap-x-6 px-4 py-5 hover:scale-101 transition-transform duration-300 sm:px-6 lg:px-8"
                                         >
                                             <div className="flex min-w-0 gap-x-4">
                                                 <img alt="" src={person.applicantImage}
@@ -945,9 +945,6 @@ const YourProfile = ()=> {
                                                                                                className="ml-2 size-5"/>
                                                     </Link>
                                                 </div>
-                                                {/*<ChevronRightIcon aria-hidden="true"*/}
-                                                {/*                  onClick={() => DeleteModalMobile(person._id, person.applicantProfileId)}*/}
-                                                {/*                  className="sm:hidden size-5 flex-none text-gray-400"/>*/}
                                             </div>
                                         </li>
                                     ))}
