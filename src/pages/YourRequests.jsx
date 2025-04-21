@@ -75,6 +75,22 @@ const YourProfile = ()=> {
     const [applicationToDelete, setApplicationToDelete] = useState('')
     const [profileToView, setProfileToView] = useState('')
 
+    const FetchApplicationRequest = async()=>{
+        try{
+            const user = JSON.parse(localStorage.getItem("user"));
+            const data = await axios.post("/application/get-application-requests", {authorId:user._id}, {withCredentials:true})
+            if (data.status === 201) {
+                localStorage.setItem("myapplicationrequests", JSON.stringify(data.data.data));
+            }
+        }catch (err){
+            console.log(err)
+        }
+    }
+
+    useEffect(()=>{
+        FetchApplicationRequest();
+    },[])
+
     useEffect(()=>{
         const pro = JSON.parse(localStorage.getItem("profile"));
         if(pro){
@@ -809,9 +825,9 @@ const YourProfile = ()=> {
                                                 <p className="text-sm/6 font-semibold text-gray-900">
                                                         {person.applicantName}
                                                 </p>
-                                                <div className="mt-1 flex text-xs/5 text-gray-600">
-                                                    <span className="text-gray-900">Opportunity Applied For - </span>
-                                                    <span className="ml-1 font-bold">{person.appliedFor}</span>
+                                                <div className="mt-1 flex text-xs/5 font-bold text-gray-600">
+                                                    Applied For -
+                                                    {person.appliedFor}
                                                 </div>
                                             </div>
                                         </div>
