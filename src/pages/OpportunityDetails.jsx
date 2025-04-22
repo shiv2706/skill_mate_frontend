@@ -116,7 +116,7 @@ const OpportunityDetails = ()=> {
     const CheckIfApplied = async() => {
         try{
             for(let i=0; i<myApplications.length; i++){
-                if(myApplications[i].authorId === opportunityDetails.authorId){
+                if(myApplications[i].authorId === opportunityDetails.authorId && myApplications[i].appliedFor === opportunityDetails.title ){
                     setApplied(true)
                     console.log("Already applied")
                     break;

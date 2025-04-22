@@ -3,16 +3,14 @@ import '../index.css'
 import { useState , useEffect} from 'react'
 import {useNavigate} from "react-router-dom";
 import {Dialog, DialogBackdrop, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/react'
-import { ChevronDownIcon, PlusIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon, PlusIcon, EllipsisVerticalIcon } from '@heroicons/react/20/solid'
 import axios from "axios";
 import {Bars3Icon, XMarkIcon, TrashIcon , PencilSquareIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import {EnvelopeIcon} from "@heroicons/react/20/solid/index.js";
-import {
-    BuildingOffice2Icon,
-    ChatBubbleBottomCenterIcon,
-    MapPinIcon,
-    SparklesIcon
-} from "@heroicons/react/24/outline/index.js";
+import {BuildingOffice2Icon, ChatBubbleBottomCenterIcon, MapPinIcon, SparklesIcon} from "@heroicons/react/24/outline/index.js";
+import Loading from "../components/Loading.jsx";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const navigation = [
     {
@@ -57,7 +55,38 @@ const navigation = [
 
 ]
 
+const statuses = {
+    Accepted: 'text-green-700 bg-green-50 ring-green-600/20',
+    Pending: 'text-blue-600 bg-gray-50 ring-gray-500/10',
+    Rejected: 'text-yellow-800 bg-yellow-50 ring-yellow-600/20',
+}
 
+function classNames(...classes) {
+    return classes.filter(Boolean).join(' ')
+}
+
+function formatDateToLongForm(dateString) {
+    const date = new Date(dateString);
+
+    const day = date.getUTCDate();
+    const month = date.toLocaleString('default', {
+        month: 'long',
+        timeZone: 'UTC'
+    });
+    const year = date.getUTCFullYear();
+
+    const getOrdinal = (n) => {
+        if (n > 3 && n < 21) return 'th';
+        switch (n % 10) {
+            case 1: return 'st';
+            case 2: return 'nd';
+            case 3: return 'rd';
+            default: return 'th';
+        }
+    };
+
+    return `${day}${getOrdinal(day)} ${month} ${year}`;
+}
 
 const YourProfile = ()=> {
     const navigate = useNavigate()
@@ -68,6 +97,46 @@ const YourProfile = ()=> {
     const [loginUser, setLoginUser] = useState('')
     const [editWindow, setEditWindow] = useState(false)
     const [imageUrl, setImageUrl] = useState('')
+    const [applications, setApplications] = useState(false)
+    const [foundApplications, setFoundApplications] = useState(false)
+    const [myApplications, setMyApplications] = useState([])
+    const [loading, setLoading] = useState(false);
+    const [notActive, setNotActive] = useState(false);
+    const [withdrawn, setWithdrawn] = useState(false);
+
+    const SetMyApplications = async () => {
+        try{
+            const Applicationrequests = JSON.parse(localStorage.getItem("myapplications"));
+            if(Applicationrequests.length===0){
+                setFoundApplications(false)
+            }else{
+                setFoundApplications(true)
+            }
+            setMyApplications(Applicationrequests);
+        }catch(error){
+            console.log(error)
+        }
+    }
+
+    useEffect(()=>{
+        SetMyApplications();
+    },[])
+
+    const FetchMyApplications = async()=>{
+        try{
+            const user = JSON.parse(localStorage.getItem("user"));
+            const data = await axios.post("/application/get-my-applications", {applicantId:user._id}, {withCredentials:true})
+            if (data.status === 201) {
+                localStorage.setItem("myapplications", JSON.stringify(data.data.data));
+            }
+        }catch (err){
+            console.log(err)
+        }
+    }
+
+    useEffect(()=>{
+        FetchMyApplications();
+    },[])
 
     useEffect(()=>{
         const pro = JSON.parse(localStorage.getItem("profile"));
@@ -174,6 +243,8 @@ const YourProfile = ()=> {
                 setEditWindow(false)
                 navigate(0)
             }else{
+                setNotActive(true)
+                setLoading(true)
                 const user = JSON.parse(localStorage.getItem("user"));
                 const updatedFormData = { ...formData, profileId: user._id};
                 const response = await axios.post("/profile/create-profile", updatedFormData, { withCredentials: true })
@@ -184,13 +255,19 @@ const YourProfile = ()=> {
                     localStorage.setItem("profile", JSON.stringify(data.data));
                     setImageUrl(data.data.data.imageUrl)
                 }
+                setLoading(false)
                 setProfile(true)
                 setShowForm(false)
+                setTimeout(() => {
+                    setNotActive(false)
+                }, 2000)
                 console.log(response)
                 // localStorage.setItem("profile", JSON.stringify(response.data));
                 navigate(0);
             }
         } catch (error) {
+            setLoading(false)
+            setNotActive(false)
             console.error("Error submitting form:", error);
             alert("Failed to submit form.");
         }
@@ -259,8 +336,51 @@ const YourProfile = ()=> {
         navigate("/aisearch")
     }
 
+    const WithdrawApplicationHandler = async (value1,value2)=>{
+        try{
+            setNotActive(true)
+            setLoading(true)
+            await axios.post("/application/withdraw-application",{applicantId:value1, jobTitle:value2 },{withCredentials: true});
+            setLoading(false)
+            setWithdrawn(true)
+            setTimeout(() => {
+                setNotActive(false)
+            }, 2000)
+            const userx = JSON.parse(localStorage.getItem("user"));
+            const data = await axios.post("/application/get-my-applications", {applicantId:userx._id}, {withCredentials:true})
+            if (data.status === 201) {
+                localStorage.setItem("myapplications", JSON.stringify(data.data.data));
+            }
+            setApplications(false)
+            SetMyApplications()
+            setApplications(true)
+        }catch(err){
+            console.log(err)
+        }
+    }
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setWithdrawn(false);
+    };
+
     return (
         <div className="bg-white ">
+
+            <div>
+                <Snackbar open={withdrawn} autoHideDuration={3000} onClose={handleClose}>
+                    <Alert
+                        onClose={handleClose}
+                        severity="success"
+                        variant="filled"
+                        sx={{width: '100%'}}
+                    >
+                        Application Withdrawn Successfully !
+                    </Alert>
+                </Snackbar>
+            </div>
             {/* Header */}
             <header className="absolute border-b border-gray-300 inset-x-0 top-0 z-50 ">
                 <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
@@ -510,9 +630,23 @@ const YourProfile = ()=> {
                     </div>
                     <div className="py-24 sm:py-15">
                         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                            {!showForm && <h1 className="text-4xl text-center mb-5 font-serif  text-gray-900 sm:text-6xl">
-                                Your Profile
-                            </h1>}
+                            {!showForm && profile && <div className="flex justify-between pb-2 py-3 border-b border-gray-300">
+                                <h1 className="text-3xl font-serif text-gray-900 sm:truncate sm:text-4xl sm:tracking-tight">
+                                    Your Profile
+                                </h1>
+                                {!applications && <button
+                                    type="button" onClick={() => setApplications(true)}
+                                    className="ml-3  inline-flex items-center cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >
+                                    My Applications
+                                </button>}
+                                {applications && <button
+                                    type="button" onClick={() => setApplications(false)}
+                                    className="ml-3  inline-flex items-center cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >
+                                    My Profile
+                                </button>}
+                            </div>}
                             {/*Delete Dialog Box*/}
 
                             <Dialog open={open} onClose={setOpen} className="relative z-10">
@@ -522,7 +656,8 @@ const YourProfile = ()=> {
                                 />
 
                                 <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-                                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                                    <div
+                                        className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                                         <DialogPanel
                                             transition
                                             className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg sm:p-6 data-closed:sm:translate-y-0 data-closed:sm:scale-95"
@@ -534,20 +669,24 @@ const YourProfile = ()=> {
                                                     className="rounded-md bg-white text-gray-400 cursor-pointer hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
                                                 >
                                                     <span className="sr-only">Close</span>
-                                                    <XMarkIcon aria-hidden="true" className="size-6" />
+                                                    <XMarkIcon aria-hidden="true" className="size-6"/>
                                                 </button>
                                             </div>
                                             <div className="sm:flex sm:items-start">
-                                                <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
-                                                    <ExclamationTriangleIcon aria-hidden="true" className="size-6 text-red-600" />
+                                                <div
+                                                    className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
+                                                    <ExclamationTriangleIcon aria-hidden="true"
+                                                                             className="size-6 text-red-600"/>
                                                 </div>
                                                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                                    <DialogTitle as="h3" className="text-base font-semibold text-gray-900">
+                                                    <DialogTitle as="h3"
+                                                                 className="text-base font-semibold text-gray-900">
                                                         Delete Profile
                                                     </DialogTitle>
                                                     <div className="mt-2">
                                                         <p className="text-sm text-gray-500">
-                                                            Are you sure you want to delete your profile? All of your Profile data will be permanently removed from
+                                                            Are you sure you want to delete your profile? All of your
+                                                            Profile data will be permanently removed from
                                                             the database. This action cannot be undone.
                                                         </p>
                                                     </div>
@@ -568,6 +707,9 @@ const YourProfile = ()=> {
                                                 >
                                                     Cancel
                                                 </button>
+                                                <div className="mr-4">
+                                                    {loading && <Loading/>}
+                                                </div>
                                             </div>
                                         </DialogPanel>
                                     </div>
@@ -575,8 +717,7 @@ const YourProfile = ()=> {
                             </Dialog>
 
 
-
-                            {profile && <div className="bg-transparent">
+                            {profile && !applications && <div className="bg-transparent">
                                 <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-10 lg:max-w-7xl lg:px-8">
                                     <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
                                         <div className="justify-items-center ">
@@ -607,7 +748,7 @@ const YourProfile = ()=> {
                                                     <div className="-mt-px flex divide-x divide-gray-200">
                                                         <div className="flex w-0 flex-1">
                                                             <button onClick={EditHandler}
-                                                                className="relative inline-flex w-0 flex-1 hover:bg-neutral-50 items-center transition-transform duration-500  hover:font-bold justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
+                                                                    className="relative inline-flex w-0 cursor-pointer flex-1 hover:bg-neutral-50 items-center transition-transform duration-500  hover:font-bold justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
                                                             >
                                                                 EDIT
                                                                 <PencilSquareIcon className="h-4 w-4"/>
@@ -616,9 +757,9 @@ const YourProfile = ()=> {
                                                         <div className="-ml-px flex w-0 flex-1">
                                                             <button
                                                                 onClick={DeleteHandler}
-                                                                className="relative inline-flex w-0  flex-1 items-center justify-center  gap-x-3 hover:bg-red-500 hover:font-bold rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
+                                                                className="relative inline-flex w-0 cursor-pointer flex-1 items-center justify-center  gap-x-3 hover:bg-red-500 hover:font-bold rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
                                                             >
-                                                            DELETE
+                                                                DELETE
                                                                 <TrashIcon className="h-4 w-4"/>
                                                             </button>
                                                         </div>
@@ -632,7 +773,7 @@ const YourProfile = ()=> {
                                             <h1 className="text-3xl font-bold tracking-tight text-gray-900">{profileData?.name}</h1>
 
                                             <div className="mt-1">
-                                            <p className="text-xl tracking-tight text-gray-900">{profileData?.title}</p>
+                                                <p className="text-xl tracking-tight text-gray-900">{profileData?.title}</p>
                                             </div>
                                             <div className="mt-2 flex gap-2"><BuildingOffice2Icon
                                                 className="h-6 w-5"/>- <h1
@@ -660,7 +801,99 @@ const YourProfile = ()=> {
 
                             </div>}
 
+                            {applications && <div className="mr-4 mt-4">
+                                {loading && <Loading/>}
+                            </div>}
+
+                            {applications && profile && <ul role="list" className="mt-3 px-4 divide-y divide-gray-100">
+                                {myApplications.map((project) => (
+                                    <li key={project._id}
+                                        className="flex items-center justify-between gap-x-6 py-5 hover:scale-101 transition-transform duration-300">
+                                        <div className="min-w-0">
+                                            <div className="flex items-start gap-x-3">
+                                                <p className="text-sm/6 font-bold text-gray-900">{project.appliedFor}</p>
+                                                <p
+                                                    className={classNames(
+                                                        statuses[project.applicationStatus],
+                                                        'mt-0.5 rounded-md px-1.5 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset',
+                                                    )}
+                                                >
+                                                    {project.applicationStatus}
+                                                </p>
+                                            </div>
+                                            <div className="mt-1 flex items-center gap-x-2 text-xs/5 text-black-500">
+                                                <p className="flex whitespace-nowrap">
+                                                    <p className="font-semibold">Applied
+                                                        on-</p> {formatDateToLongForm(project.createdAt)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-none items-center gap-x-4">
+                                            <button disabled={notActive}
+                                                onClick={() => WithdrawApplicationHandler(project.applicantProfileId, project.appliedFor)}
+                                                className="hidden rounded-md bg-white cursor-pointer px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-red-500 sm:block"
+                                            >
+                                                Withdraw
+                                            </button>
+                                            <Menu as="div" className="relative flex-none">
+                                                <MenuButton
+                                                    className="-m-2.5 block p-2.5 text-gray-500 hover:text-gray-900">
+                                                    <span className="sr-only">Open options</span>
+                                                    <EllipsisVerticalIcon aria-hidden="true" className="size-5"/>
+                                                </MenuButton>
+                                                <MenuItems
+                                                    transition
+                                                    className="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+                                                >
+                                                    <MenuItem>
+                                                        <a
+                                                            href="#"
+                                                            className="block px-3 py-1 text-sm/6 text-gray-900 data-focus:bg-gray-50 data-focus:outline-hidden"
+                                                        >
+                                                            Edit<span className="sr-only">, {project.name}</span>
+                                                        </a>
+                                                    </MenuItem>
+                                                    <MenuItem>
+                                                        <a
+                                                            href="#"
+                                                            className="block px-3 py-1 text-sm/6 text-gray-900 data-focus:bg-gray-50 data-focus:outline-hidden"
+                                                        >
+                                                            Move<span className="sr-only">, {project.name}</span>
+                                                        </a>
+                                                    </MenuItem>
+                                                    <MenuItem>
+                                                        <a
+                                                            href="#"
+                                                            className="block px-3 py-1 text-sm/6 text-gray-900 data-focus:bg-gray-50 data-focus:outline-hidden"
+                                                        >
+                                                            Delete<span className="sr-only">, {project.name}</span>
+                                                        </a>
+                                                    </MenuItem>
+                                                </MenuItems>
+                                            </Menu>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>}
+                            {!foundApplications && applications && <div className="text-center mt-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round"
+                                     className="lucide lucide-user-round-search-icon lucide-user-round-search mx-auto size-20 text-gray-400">
+                                    <circle cx="10" cy="8" r="5"/>
+                                    <path d="M2 21a8 8 0 0 1 10.434-7.62"/>
+                                    <circle cx="18" cy="18" r="3"/>
+                                    <path d="m22 22-1.9-1.9"/>
+                                </svg>
+                                <h3 className="mt-2 text-sm font-semibold text-gray-900">Nothing to show</h3>
+                                <p className="mt-1 text-sm text-gray-500">No applications found</p>
+
+                            </div>}
+
                             {!profile && !showForm && <div className="text-center">
+                                <h1 className="text-4xl text-center mb-5 font-serif  text-gray-900 sm:text-6xl">
+                                    Your Profile
+                                </h1>
                                 <svg
                                     fill="none"
                                     stroke="currentColor"
@@ -691,17 +924,19 @@ const YourProfile = ()=> {
                             {showForm && !profile && <form onSubmit={handleSubmit}>
                                 <div className="space-y-12">
                                     <div className="border-b border-gray-900/10 pb-12">
-                                        {!editWindow && <h2 className="text-3xl font-bold font-serif text-center tracking-tight text-gray-900">Create
-                                            Profile</h2>}
-                                        {editWindow && <h2 className="text-3xl font-bold font-serif text-center tracking-tight text-gray-900">Edit
-                                            Profile</h2>}
+                                        {!editWindow &&
+                                            <h2 className="text-3xl font-bold font-serif text-center tracking-tight text-gray-900">Create
+                                                Profile</h2>}
+                                        {editWindow &&
+                                            <h2 className="text-3xl font-bold font-serif text-center tracking-tight text-gray-900">Edit
+                                                Profile</h2>}
                                         <p className="mt-1 text-sm/6 text-center text-gray-600">
                                             This information will be displayed publicly so be careful what you share.
                                         </p>
                                     </div>
 
                                     <div className="border-b border-gray-900/10 pb-12">
-                                    <h2 className="text-base/7 font-semibold text-gray-900">Personal
+                                        <h2 className="text-base/7 font-semibold text-gray-900">Personal
                                             Information</h2>
                                         <p className="mt-1 text-sm/6 text-gray-600">
                                             fields marked with (*) are required
@@ -784,7 +1019,8 @@ const YourProfile = ()=> {
                                                     About*
                                                 </label>
                                                 <div className="mt-2">
-                                                        <textarea name="description" value={formData.description} onChange={handleChange} rows={4}
+                                                        <textarea name="description" value={formData.description}
+                                                                  onChange={handleChange} rows={4}
                                                                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                                                                   defaultValue={''} maxLength={1000}/>
                                                 </div>
@@ -858,7 +1094,7 @@ const YourProfile = ()=> {
                                             <div className="col-span-full">
                                                 <label htmlFor="street-address"
                                                        className="block text-sm/6 font-medium text-gray-900">
-                                                Enter the url of your image
+                                                    Enter the url of your image
                                                 </label>
                                                 <div className="mt-2">
                                                     <input
@@ -875,12 +1111,16 @@ const YourProfile = ()=> {
                                 </div>
 
                                 <div className="mt-6 flex items-center justify-end gap-x-6">
-                                    <button onClick={FormCancelHandler} className="text-sm/6 font-semibold text-gray-900 cursor-pointer hover:scale-102">
+                                    <div className="mr-4">
+                                        {loading && <Loading/>}
+                                    </div>
+                                    <button onClick={FormCancelHandler}
+                                            className="text-sm/6 font-semibold text-gray-900 cursor-pointer hover:scale-102">
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                        className="rounded-md bg-indigo-600 cursor-pointer px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                     >
                                         Save
                                     </button>
@@ -928,7 +1168,8 @@ const YourProfile = ()=> {
 
                 {/* Copyright - Align Center */}
                 <div className="text-s text-gray-500 text-center mt-10 sm:mt-0 pt-0 pb-3 ">
-                    <a href="https://www.linkedin.com/in/shivansh-pradhan-31572625a/">© 2025 Shivansh Pradhan. All rights
+                    <a href="https://www.linkedin.com/in/shivansh-pradhan-31572625a/">© 2025 Shivansh Pradhan. All
+                        rights
                         reserved.</a>
                 </div>
             </footer>
