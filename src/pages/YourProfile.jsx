@@ -58,7 +58,7 @@ const navigation = [
 const statuses = {
     Accepted: 'text-green-700 bg-green-50 ring-green-600/20',
     Pending: 'text-blue-600 bg-gray-50 ring-gray-500/10',
-    Rejected: 'text-yellow-800 bg-yellow-50 ring-yellow-600/20',
+    Rejected: 'text-red-800 bg-yellow-50 ring-yellow-600/20',
 }
 
 function classNames(...classes) {
