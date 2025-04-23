@@ -805,10 +805,10 @@ const YourProfile = ()=> {
                                 {loading && <Loading/>}
                             </div>}
 
-                            {applications && profile && <ul role="list" className="mt-3 px-4 divide-y divide-gray-100">
+                            {applications && profile && <ul role="list" className="mt-10 divide-gray-100 divide-y divide-gray-100 overflow-hidden bg-transparent shadow-xs ring-1 ring-gray-900/5 sm:rounded-xl">
                                 {myApplications.map((project) => (
                                     <li key={project._id}
-                                        className="flex items-center justify-between gap-x-6 py-5 hover:scale-101 transition-transform duration-300">
+                                        className="relative flex justify-between gap-x-6 px-4 py-5 hover:scale-101 transition-transform duration-300 sm:px-6 lg:px-8">
                                         <div className="min-w-0">
                                             <div className="flex items-start gap-x-3">
                                                 <p className="text-sm/6 font-bold text-gray-900">{project.appliedFor}</p>
