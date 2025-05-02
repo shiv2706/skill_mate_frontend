@@ -274,6 +274,7 @@ const YourProfile = ()=> {
                 setShowForm(true);
                 setProfile(false);
                 setApplications(false)
+                setAcceptedApplications(false)
             }else{
                 alert("Please Create Your Profile first");
             }
