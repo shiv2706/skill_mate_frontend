@@ -267,6 +267,10 @@ const OpportunityDetails = ()=> {
             if (data.status === 201) {
                 localStorage.setItem("myapplications", JSON.stringify(data.data.data));
             }
+            const myapplications = JSON.parse(localStorage.getItem("myapplications"));
+            setMyApplications(myapplications);
+            console.log(myapplications)
+            setApplied(false)
         }catch(err){
             console.log(err)
         }
