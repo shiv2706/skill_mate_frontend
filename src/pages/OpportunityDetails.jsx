@@ -226,7 +226,7 @@ const OpportunityDetails = ()=> {
             }else{
                 const response = await axios.post("/application/create-application",{authorId:opportunityDetails.authorId,
                     applicantName:user.data.name, applicantImage:user.data.imageUrl, applicantProfileId:user.data.profileId,
-                    appliedFor:opportunityDetails.title} ,{withCredentials: true});
+                    appliedFor:opportunityDetails.title,applicantEmail:user.data.email} ,{withCredentials: true});
                 console.log(response.data.data)
                 setOpen(false)
                 setLoading(false)
