@@ -713,7 +713,7 @@ const OpportunityDetails = ()=> {
                                         className="font-bold">{opportunityDetails?.organization}</h1></div>
                                     <div className="flex mt-3">
                                         <MapPinIcon className="h-6 w-5"/><p
-                                        className="font-bold">Location- {opportunityDetails?.location}</p>
+                                        className="font-bold">- {opportunityDetails?.location}</p>
                                     </div>
 
                                     {/* Reviews */}
