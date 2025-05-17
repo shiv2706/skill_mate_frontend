@@ -364,10 +364,14 @@ const YourProfile = ()=> {
         }
     }
 
-    const AcceptApplication = async (value) =>{
+    const AcceptApplication = async (value,value2,value3) =>{
         try{
             setLoading(true)
+            const mailmessage = `Congratulations! your application for ${value3} has been accepted and the author will reach out to you soon!`
             await axios.post("/application/delete-application", {applicationId:value, statusChange:"Accepted"},{withCredentials: true})
+            console.log("sending" + mailmessage)
+            await axios.post("/mail/send-mail", {to:value2, subject:"Application Accepted!", text:mailmessage}, {withCredentials: true})
+            console.log("mailsent")
             const user = JSON.parse(localStorage.getItem("user"));
             const data = await axios.post("/application/get-application-requests", {authorId:user._id}, {withCredentials:true})
             if (data.status === 201) {
@@ -916,7 +920,7 @@ const YourProfile = ()=> {
                                                     DELETE<XCircleIcon aria-hidden="true" className="ml-2 size-5"/>
                                                 </button>
                                                 <button
-                                                    type="button" onClick={() => AcceptApplication(person._id)}
+                                                    type="button" onClick={() => AcceptApplication(person._id,person.applicantEmail,person.appliedFor)}
                                                     className="ml-3 inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-green-500"
                                                 >
                                                     ACCEPT<CheckCircleIcon aria-hidden="true" className="ml-2 size-5"/>
@@ -964,7 +968,7 @@ const YourProfile = ()=> {
                                                           className="ml-3 inline-flex items-center cursor-pointer rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                                     >
                                                         View<ArrowTopRightOnSquareIcon aria-hidden="true"
-                                                                                               className="ml-2 size-5"/>
+                                                                                       className="ml-2 size-5"/>
                                                     </Link>
                                                 </div>
                                             </div>
