@@ -13,6 +13,7 @@ import Loading from "../components/Loading.jsx";
 
 
 
+
 const navigation = [
     {
         name: 'Linkedin',
@@ -381,6 +382,7 @@ const YourProfile = ()=> {
             fetchApplications()
             setApplications(true)
             setLoading(false)
+            setSuccessMessage(true)
             setOpen(false)
 
         }catch(err){
@@ -410,14 +412,14 @@ const YourProfile = ()=> {
     return (
         <div className="bg-white ">
             <div>
-                <Snackbar open={successMessage} autoHideDuration={6000} onClose={handleClose}>
+                <Snackbar open={successMessage} autoHideDuration={3500} onClose={handleClose}>
                     <Alert
                         onClose={handleClose}
                         severity="success"
                         variant="filled"
                         sx={{width: '100%'}}
                     >
-                        This is a success Alert inside a Snackbar!
+                        Applicant will be notified via Email!
                     </Alert>
                 </Snackbar>
             </div>
