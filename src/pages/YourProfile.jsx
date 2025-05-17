@@ -911,11 +911,11 @@ const YourProfile = ()=> {
 
                             {applications && profile && <ul role="list" className="mt-10 divide-gray-100 divide-y divide-gray-100 overflow-hidden bg-transparent shadow-xs ring-1 ring-gray-900/5 sm:rounded-xl">
                                 {myApplications.map((project) => (
-                                    <li key={project._id} onClick={()=> StatusHandler(project.applicationStatus)}
+                                    <li key={project._id}
                                         className="relative flex justify-between cursor-pointer gap-x-6 px-4 py-5 hover:scale-101 transition-transform duration-300 sm:px-6 lg:px-8">
                                         <div className="min-w-0 ">
                                             <div className="flex items-start gap-x-3">
-                                                <p className="text-sm/6 font-bold text-gray-900 cursor-pointer">{project.appliedFor}</p>
+                                                <button onClick={()=> StatusHandler(project.applicationStatus)} className="text-sm/6 font-bold text-gray-900 cursor-pointer">{project.appliedFor}</button>
                                                 <p
                                                     className={classNames(
                                                         statuses[project.applicationStatus],
