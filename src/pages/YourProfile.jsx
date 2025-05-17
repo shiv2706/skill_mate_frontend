@@ -3,9 +3,9 @@ import '../index.css'
 import { useState , useEffect} from 'react'
 import {useNavigate} from "react-router-dom";
 import {Dialog, DialogBackdrop, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems} from '@headlessui/react'
-import { ChevronDownIcon, PlusIcon, EllipsisVerticalIcon } from '@heroicons/react/20/solid'
+import {ChevronDownIcon, PlusIcon, EllipsisVerticalIcon, CheckIcon} from '@heroicons/react/20/solid'
 import axios from "axios";
-import {Bars3Icon, XMarkIcon, TrashIcon , PencilSquareIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import {Bars3Icon, XMarkIcon, TrashIcon , PencilSquareIcon, ExclamationTriangleIcon, ClockIcon } from '@heroicons/react/24/outline'
 import {EnvelopeIcon} from "@heroicons/react/20/solid/index.js";
 import {BuildingOffice2Icon, ChatBubbleBottomCenterIcon, MapPinIcon, SparklesIcon} from "@heroicons/react/24/outline/index.js";
 import Loading from "../components/Loading.jsx";
@@ -91,6 +91,7 @@ function formatDateToLongForm(dateString) {
 const YourProfile = ()=> {
     const navigate = useNavigate()
     const [open, setOpen] = useState(false)
+    const [openStatus, setOpenStatus] = useState(false)
     const [profile, setProfile] = useState(false); // Stores user profile if found
     const [showForm, setShowForm] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -103,6 +104,7 @@ const YourProfile = ()=> {
     const [loading, setLoading] = useState(false);
     const [notActive, setNotActive] = useState(false);
     const [withdrawn, setWithdrawn] = useState(false);
+    const [status, setStatus] = useState("")
 
     const SetMyApplications = async () => {
         try{
@@ -309,6 +311,13 @@ const YourProfile = ()=> {
         setOpen(true)
     }
 
+    const StatusHandler = (value)=> {
+        setStatus(value)
+        console.log(status)
+        setOpenStatus(true)
+
+    }
+
     const DeleteProfile = async () =>{
         try{
             const userprofile = JSON.parse(localStorage.getItem("profile"));
@@ -365,6 +374,13 @@ const YourProfile = ()=> {
         }
         setWithdrawn(false);
     };
+
+    const closeDialog = ()=>{
+        setOpenStatus(false)
+        setTimeout(()=>{
+            setStatus('')
+        },500)
+    }
 
     return (
         <div className="bg-white ">
@@ -723,6 +739,87 @@ const YourProfile = ()=> {
                                 </div>
                             </Dialog>
 
+                            <Dialog open={openStatus} onClose={setOpenStatus} className="relative z-10">
+                                <DialogBackdrop
+                                    transition
+                                    className="fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+                                />
+
+                                <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+                                    <div
+                                        className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                                        <DialogPanel
+                                            transition
+                                            className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg sm:p-6 data-closed:sm:translate-y-0 data-closed:sm:scale-95"
+                                        >
+                                            <div className="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
+                                                <button
+                                                    type="button"
+                                                    onClick={closeDialog}
+                                                    className="rounded-md bg-white text-gray-400 cursor-pointer hover:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
+                                                >
+                                                    <span className="sr-only">Close</span>
+                                                    <XMarkIcon aria-hidden="true" className="size-6"/>
+                                                </button>
+                                            </div>
+                                            <div className="sm:flex sm:items-start mb-5 ">
+                                                {status==="Pending" && <div
+                                                    className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:size-10">
+                                                    <ClockIcon aria-hidden="true"
+                                                                             className="size-6 text-blue-600"/>
+                                                </div>}
+                                                {status==="Rejected" && <div
+                                                    className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
+                                                    <ExclamationTriangleIcon aria-hidden="true"
+                                                               className="size-6 text-red-600"/>
+                                                </div>}
+                                                {status==="Accepted" && <div
+                                                    className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mx-0 sm:size-10">
+                                                    <CheckIcon aria-hidden="true"
+                                                                             className="size-6 text-green-600"/>
+                                                </div>}
+                                                {status==="Accepted" && <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                                    <DialogTitle as="h3"
+                                                                 className="text-base font-semibold text-gray-900">
+                                                        Application Accepted
+                                                    </DialogTitle>
+                                                    <div className="mt-2">
+                                                        <p className="text-sm text-gray-600 font-semibold">
+                                                            Congratulations! Your Application has been accepted by the author of this request.
+                                                            The Author will reach out to you soon!
+                                                        </p>
+                                                    </div>
+                                                </div>}
+                                                {status==="Pending" && <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                                    <DialogTitle as="h3"
+                                                                 className="text-base font-semibold text-gray-900">
+                                                        Application Under Review
+                                                    </DialogTitle>
+                                                    <div className="mt-2">
+                                                        <p className="text-sm text-gray-600 font-semibold">
+                                                            Your Application is still under review. Please check again after sometime.
+                                                        </p>
+                                                    </div>
+                                                </div>}
+                                                {status==="Rejected" && <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                                    <DialogTitle as="h3"
+                                                                 className="text-base font-semibold text-gray-900">
+                                                        Application Rejected
+                                                    </DialogTitle>
+                                                    <div className="mt-2">
+                                                        <p className="text-sm text-gray-600 font-semibold">
+                                                            Your application for this job was not successful this time.
+                                                            Don't be discouraged—every step brings you closer to the right opportunity.
+                                                            Keep exploring, and great things are ahead!
+                                                        </p>
+                                                    </div>
+                                                </div>}
+                                            </div>
+                                        </DialogPanel>
+                                    </div>
+                                </div>
+                            </Dialog>
+
 
                             {profile && !applications && <div className="bg-transparent">
                                 <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-10 lg:max-w-7xl lg:px-8">
@@ -814,11 +911,11 @@ const YourProfile = ()=> {
 
                             {applications && profile && <ul role="list" className="mt-10 divide-gray-100 divide-y divide-gray-100 overflow-hidden bg-transparent shadow-xs ring-1 ring-gray-900/5 sm:rounded-xl">
                                 {myApplications.map((project) => (
-                                    <li key={project._id}
-                                        className="relative flex justify-between gap-x-6 px-4 py-5 hover:scale-101 transition-transform duration-300 sm:px-6 lg:px-8">
-                                        <div className="min-w-0">
+                                    <li key={project._id} onClick={()=> StatusHandler(project.applicationStatus)}
+                                        className="relative flex justify-between cursor-pointer gap-x-6 px-4 py-5 hover:scale-101 transition-transform duration-300 sm:px-6 lg:px-8">
+                                        <div className="min-w-0 ">
                                             <div className="flex items-start gap-x-3">
-                                                <p className="text-sm/6 font-bold text-gray-900">{project.appliedFor}</p>
+                                                <p className="text-sm/6 font-bold text-gray-900 cursor-pointer">{project.appliedFor}</p>
                                                 <p
                                                     className={classNames(
                                                         statuses[project.applicationStatus],
@@ -842,42 +939,6 @@ const YourProfile = ()=> {
                                             >
                                                 Withdraw
                                             </button>
-                                            {/*<Menu as="div" className="relative flex-none">*/}
-                                            {/*    <MenuButton*/}
-                                            {/*        className="-m-2.5 block p-2.5 text-gray-500 hover:text-gray-900">*/}
-                                            {/*        <span className="sr-only">Open options</span>*/}
-                                            {/*        <EllipsisVerticalIcon aria-hidden="true" className="size-5"/>*/}
-                                            {/*    </MenuButton>*/}
-                                            {/*    <MenuItems*/}
-                                            {/*        transition*/}
-                                            {/*        className="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"*/}
-                                            {/*    >*/}
-                                            {/*        <MenuItem>*/}
-                                            {/*            <a*/}
-                                            {/*                href="#"*/}
-                                            {/*                className="block px-3 py-1 text-sm/6 text-gray-900 data-focus:bg-gray-50 data-focus:outline-hidden"*/}
-                                            {/*            >*/}
-                                            {/*                Edit<span className="sr-only">, {project.name}</span>*/}
-                                            {/*            </a>*/}
-                                            {/*        </MenuItem>*/}
-                                            {/*        <MenuItem>*/}
-                                            {/*            <a*/}
-                                            {/*                href="#"*/}
-                                            {/*                className="block px-3 py-1 text-sm/6 text-gray-900 data-focus:bg-gray-50 data-focus:outline-hidden"*/}
-                                            {/*            >*/}
-                                            {/*                Move<span className="sr-only">, {project.name}</span>*/}
-                                            {/*            </a>*/}
-                                            {/*        </MenuItem>*/}
-                                            {/*        <MenuItem>*/}
-                                            {/*            <a*/}
-                                            {/*                href="#"*/}
-                                            {/*                className="block px-3 py-1 text-sm/6 text-gray-900 data-focus:bg-gray-50 data-focus:outline-hidden"*/}
-                                            {/*            >*/}
-                                            {/*                Delete<span className="sr-only">, {project.name}</span>*/}
-                                            {/*            </a>*/}
-                                            {/*        </MenuItem>*/}
-                                            {/*    </MenuItems>*/}
-                                            {/*</Menu>*/}
                                         </div>
                                     </li>
                                 ))}
