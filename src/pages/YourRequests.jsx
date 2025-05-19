@@ -79,6 +79,8 @@ const YourProfile = ()=> {
     const [acceptedApplications, setAcceptedApplications] = useState(false)
     const [hasPending, setHasPending] = useState(false)
     const [hasAccepted, setHasAccepted] = useState(false)
+    const [applicantEmail, setApplicantEmail] = useState('')
+    const [applicantAppliedFor, setApplicantAppliedFor] = useState('')
 
     useEffect(() => {
         const haspending = applicationRequests.some(
@@ -390,10 +392,12 @@ const YourProfile = ()=> {
         }
     }
 
-    const DeleteModalMobile = (value1,value2)=>{
+    const DeleteModalMobile = (value1,value2,value3,value4)=>{
         setOpen(true)
         setApplicationToDelete(value1)
         setProfileToView(value2)
+        setApplicantEmail(value3)
+        setApplicantAppliedFor(value4)
     }
 
     const AcceptedApplicationHandler = async()=>{
@@ -796,7 +800,7 @@ const YourProfile = ()=> {
                                                     DELETE
                                                 </button>
                                                 <button
-                                                    type="button" onClick={() => AcceptApplication(applicationToDelete)}
+                                                    type="button" onClick={() => AcceptApplication(applicationToDelete,applicantEmail,applicantAppliedFor)}
                                                     className="ml-3 inline-flex cursor-pointer items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-green-600"
                                                 >
                                                     ACCEPT
@@ -936,7 +940,7 @@ const YourProfile = ()=> {
                                                 </Link>
                                             </div>
                                             <ChevronRightIcon aria-hidden="true"
-                                                              onClick={() => DeleteModalMobile(person._id, person.applicantProfileId)}
+                                                              onClick={() => DeleteModalMobile(person._id, person.applicantProfileId,person.applicantEmail,person.appliedFor)}
                                                               className="sm:hidden size-5 flex-none text-gray-400"/>
                                         </div>
                                     </li>
