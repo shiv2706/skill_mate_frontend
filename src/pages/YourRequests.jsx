@@ -263,8 +263,8 @@ const YourProfile = ()=> {
         } catch (error) {
             setLoading(false)
             setNotActive(false)
-            console.error("Error submitting form:", error.response ? error.response.data : error.message);
-            alert("Failed to submit form. Check console for more details.");
+            console.error("Error submitting form:", error.response ? error.response.data.message : error.data.message);
+            alert(error.response.data.message ? error.response.data.message : error.response.data);
         }
     };
 
