@@ -97,7 +97,7 @@ const AiSearch = ()=> {
             const allprofiles = await axios.get('/profile/get-all-profile', {withCredentials: true});
             setAllProfiles(allprofiles.data)
             // setDataRecieved(true)
-            // console.log("all profiles are: " + JSON.stringify(allprofiles.data))
+            console.log("all profiles are: " + JSON.stringify(allprofiles.data))
         }catch (err){
             console.log(err)
         }
